@@ -1,0 +1,85 @@
+name: 面试题投稿
+about: 投稿一道 AI Agent / RAG / LLM 应用开发相关面试题
+title: "[Question] "
+labels: ["content", "question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢投稿！请尽量给出可直接用于面试复习的结构化内容。
+  - type: input
+    id: topic
+    attributes:
+      label: 所属专题
+      description: 例如 Agent 基础 / RAG / MCP / Tool Calling / Memory / 工程化 / 项目深挖
+      placeholder: RAG
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 面试题
+      placeholder: RAG 如何缓解大模型幻觉？
+    validations:
+      required: true
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: 难度
+      options:
+        - basic
+        - medium
+        - hard
+        - system-design
+        - project
+    validations:
+      required: true
+  - type: textarea
+    id: novice_answer
+    attributes:
+      label: 新手版回答
+      description: 适合快速背诵的简洁回答。
+    validations:
+      required: false
+  - type: textarea
+    id: expert_answer
+    attributes:
+      label: 专业版回答
+      description: 结构化、可面试表达的高质量回答。
+    validations:
+      required: false
+  - type: textarea
+    id: key_points
+    attributes:
+      label: 考察点
+      placeholder: |
+        - 检索质量
+        - 引用来源
+        - 拒答机制
+    validations:
+      required: false
+  - type: textarea
+    id: pitfalls
+    attributes:
+      label: 易错点
+      placeholder: |
+        - 不要说 RAG 可以彻底消除幻觉
+    validations:
+      required: false
+  - type: textarea
+    id: followups
+    attributes:
+      label: 可能追问
+      placeholder: |
+        - 如何评估 RAG 效果？
+        - RAG 和微调怎么取舍？
+    validations:
+      required: false
+  - type: input
+    id: companies
+    attributes:
+      label: 公司 / 来源
+      description: 可匿名，例如 “某大厂一面”。
+      placeholder: 字节 / 百度 / 某创业公司
+    validations:
+      required: false
