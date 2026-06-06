@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎤 Miku 题库浏览 ♪ — AI Agent 面经宝典</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#e9fbff;--s1:rgba(255,255,255,0.76);--s2:rgba(240,255,250,0.62);--br:rgba(57,197,187,0.2);--br2:rgba(0,206,209,0.35);--t1:#17343b;--t2:#40636b;--t3:#7b9ea3;--ac:#39c5bb;--ac2:#00ced1;--gr:#28c99b;--or:#ff9f7a;--rd:#ff7e9e;--cy:#66ccff;--pk:#ffb7c5;--mint:#b5ead7;--r:12px}
+html,body{height:100%;width:100%;overflow:hidden}
+body{position:relative;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:radial-gradient(ellipse at 18% 15%,rgba(255,255,255,0.92) 0%,rgba(255,255,255,0.52) 18%,transparent 34%),radial-gradient(ellipse at 78% 18%,rgba(181,234,215,0.65),transparent 34%),radial-gradient(circle at 70% 78%,rgba(255,183,197,0.3),transparent 28%),linear-gradient(135deg,#f7fdff 0%,#d9f7ff 34%,#dffbf1 68%,#f6fffb 100%);background-size:120% 120%,130% 130%,125% 125%,100% 100%;color:var(--t1);line-height:1.65;display:flex}
+*,*::before,*::after{cursor:url('./miku-cursor-a.png') 16 16, auto}
+body::before{content:"♪   ♫   ♬       ♪   ♫";position:fixed;inset:0;pointer-events:none;z-index:0;color:rgba(57,197,187,0.22);font-size:56px;letter-spacing:0.8em;line-height:2.2;white-space:pre-wrap;background:radial-gradient(ellipse at 16% 24%,rgba(255,255,255,0.76) 0 8%,transparent 22%),radial-gradient(ellipse at 32% 18%,rgba(255,255,255,0.55) 0 7%,transparent 20%),radial-gradient(ellipse at 78% 68%,rgba(255,255,255,0.62) 0 9%,transparent 24%);filter:blur(0.1px);opacity:0.72;transform:rotate(-8deg);animation:none}
+body::after{content:"";position:fixed;inset:-18%;pointer-events:none;z-index:0;background:radial-gradient(circle at 20% 72%,rgba(57,197,187,0.16),transparent 24%),radial-gradient(circle at 86% 28%,rgba(102,204,255,0.2),transparent 26%),radial-gradient(circle at 62% 14%,rgba(255,183,197,0.18),transparent 20%);filter:blur(16px);animation:none}
+
+/* SIDEBAR */
+.sidebar{
+  position:relative;z-index:1;width:272px;min-width:272px;height:100vh;transform:translateZ(0);-webkit-transform:translateZ(0);
+  background:linear-gradient(180deg,rgba(255,255,255,0.78),rgba(233,255,249,0.62));
+  border-right:1px solid rgba(57,197,187,0.24);
+  box-shadow:1px 0 0 rgba(255,255,255,0.65),18px 0 42px rgba(57,197,187,0.11);
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.sb-hd{
+  position:relative;padding:22px 20px 18px;overflow:hidden;
+  border-bottom:1px solid var(--br);
+  background:linear-gradient(180deg,rgba(102,204,255,0.18) 0%,rgba(181,234,215,0.18) 100%);
+}
+.sb-hd::after{content:"♪ 🥬";position:absolute;right:16px;bottom:10px;color:rgba(57,197,187,0.22);font-size:1.45em;letter-spacing:0.18em;transform:rotate(-8deg)}
+.miku-avatar-wrap{position:relative;z-index:1;display:flex;justify-content:center;margin:0 0 10px}
+.miku-avatar{width:112px;height:112px;object-fit:contain;border-radius:24px;background:linear-gradient(135deg,rgba(255,255,255,0.82),rgba(181,234,215,0.36));border:1px solid rgba(57,197,187,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.92),0 14px 32px rgba(57,197,187,0.2),0 0 34px rgba(102,204,255,0.22);filter:drop-shadow(0 10px 18px rgba(0,206,209,0.18));animation:mikuFloat 4.8s ease-in-out infinite}
+.miku-watermark{position:fixed;right:clamp(18px,5vw,72px);bottom:clamp(14px,4vw,48px);width:clamp(180px,23vw,330px);opacity:0.12;pointer-events:none;z-index:0;filter:drop-shadow(0 22px 42px rgba(57,197,187,0.22)) saturate(1.08);transform:rotate(-7deg)}
+@keyframes mikuFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+.sb-hd h1{position:relative;font-size:1.08em;font-weight:800;letter-spacing:0;text-shadow:0 2px 18px rgba(102,204,255,0.35);z-index:1}
+.sb-hd h1 span{background:linear-gradient(135deg,#16363a 0%,var(--ac) 42%,var(--cy) 74%,var(--pk) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sb-hd p{position:relative;font-size:0.7em;color:var(--t3);margin-top:2px;z-index:1}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 12px}
+.sb-nav::-webkit-scrollbar{width:5px}
+.sb-nav::-webkit-scrollbar-track{background:transparent}
+.sb-nav::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--ac),var(--cy));border-radius:999px;box-shadow:0 0 12px rgba(57,197,187,0.45)}
+.sb-sec{font-size:0.65em;letter-spacing:0.12em;color:#6b9ca3;padding:14px 10px 6px;font-weight:800}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border:1px solid transparent;border-radius:10px;cursor:url(./miku-cursor-a.png) 16 16, pointer;font-size:0.82em;color:var(--t2);
+  transition:transform 0.18s ease,background 0.18s ease,border-color 0.18s ease,color 0.18s ease,box-shadow 0.18s ease;
+  text-decoration:none;margin-bottom:2px;
+}
+.sb-item:hover{background:rgba(255,255,255,0.72);color:var(--t1);border-color:var(--br);transform:translateX(2px);box-shadow:0 8px 24px rgba(57,197,187,0.1)}
+.sb-item.on{background:linear-gradient(135deg,rgba(57,197,187,0.18),rgba(102,204,255,0.18));color:#057f84;font-weight:700;border:1px solid var(--br2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.72),0 10px 24px rgba(57,197,187,0.13)}
+.sb-ic{font-size:1em;width:22px;text-align:center;flex-shrink:0}
+.sb-nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-badge{font-size:0.68em;color:#057f84;background:rgba(255,255,255,0.72);border:1px solid rgba(57,197,187,0.24);padding:2px 8px;border-radius:999px;min-width:32px;text-align:center;flex-shrink:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.8)}
+.sb-ft{padding:14px 20px;border-top:1px solid var(--br);font-size:0.7em;color:var(--t3);background:rgba(255,255,255,0.4)}
+.sb-ft a{color:#078d91;text-decoration:none;font-weight:600}
+.sb-ft a:hover{opacity:0.86;text-shadow:0 0 12px rgba(57,197,187,0.35)}
+
+/* MAIN */
+.main{position:relative;z-index:1;flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:transparent}
+.main-top{
+  padding:18px 28px 16px;border-bottom:1px solid var(--br);
+  background:rgba(255,255,255,0.58);flex-shrink:0;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  box-shadow:0 1px 0 rgba(255,255,255,0.7),0 16px 42px rgba(57,197,187,0.08);
+}
+.main-top h2{font-size:1.15em;font-weight:800;display:flex;align-items:center;gap:8px;color:#17343b;text-shadow:0 2px 18px rgba(102,204,255,0.3)}
+.main-top h2::before{content:"🎤";font-size:0.96em;filter:drop-shadow(0 0 10px rgba(57,197,187,0.35))}
+.main-top h2::after{content:"♪";color:var(--ac);font-weight:900}
+.main-top .right{display:flex;gap:8px;align-items:center}
+
+.btn{
+  padding:8px 15px;border-radius:10px;border:1px solid rgba(57,197,187,0.28);
+  background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(234,255,249,0.82));color:#16747a;cursor:url(./miku-cursor-a.png) 16 16, pointer;
+  font-size:0.78em;font-weight:700;transition:transform 0.18s ease,background 0.18s ease,border-color 0.18s ease,color 0.18s ease,box-shadow 0.18s ease;white-space:nowrap;
+  font-family:inherit;display:inline-flex;align-items:center;gap:5px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 8px 24px rgba(57,197,187,0.12);
+}
+.btn:hover{background:linear-gradient(135deg,rgba(57,197,187,0.18),rgba(102,204,255,0.22));color:#075b61;border-color:var(--br2);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 12px 28px rgba(0,206,209,0.18)}
+.btn-p{background:linear-gradient(135deg,var(--ac),var(--ac2) 58%,var(--cy));color:#fff;border:1px solid rgba(0,206,209,0.5);font-weight:800;box-shadow:0 10px 28px rgba(57,197,187,0.3)}
+.btn-p:hover{background:linear-gradient(135deg,#2ebcb2,#00c7ca 58%,#74d5ff);box-shadow:0 14px 34px rgba(57,197,187,0.38)}
+
+.search-wrap{flex-shrink:0;padding:12px 28px}
+.search-input{
+  width:100%;padding:10px 16px;border-radius:10px;border:1px solid rgba(57,197,187,0.28);
+  background:rgba(255,255,255,0.72);color:var(--t1);font-size:0.85em;font-family:inherit;
+  transition:border-color 0.2s,box-shadow 0.2s;outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 8px 20px rgba(57,197,187,0.08);
+}
+.search-input:focus{border-color:var(--ac);box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 0 0 3px rgba(57,197,187,0.12),0 12px 28px rgba(57,197,187,0.14)}
+.search-input::placeholder{color:var(--t3)}
+
+.content{flex:1;overflow-y:auto;padding:20px 28px 32px}
+.content::-webkit-scrollbar{width:6px}
+.content::-webkit-scrollbar-track{background:transparent}
+.content::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--ac),var(--cy));border-radius:999px;box-shadow:0 0 14px rgba(57,197,187,0.5)}
+
+/* Category section */
+.cat-sec{margin-bottom:28px}
+.cat-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--br)}
+.cat-hd .ic{font-size:1.1em}
+.cat-hd .nm{font-size:1em;font-weight:700;color:var(--t1)}
+.cat-hd .ct{font-size:0.75em;color:var(--t3)}
+
+/* Question Card */
+.qc{
+  background:linear-gradient(180deg,rgba(255,255,255,0.82),rgba(240,255,250,0.66));border:1px solid rgba(57,197,187,0.2);
+  border-radius:16px;margin-bottom:12px;overflow:hidden;
+  transition:transform 0.22s ease,border-color 0.22s ease,box-shadow 0.22s ease,background 0.22s ease;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.88),0 12px 32px rgba(57,197,187,0.1);
+}
+.qc:hover{border-color:var(--br2);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 18px 46px rgba(57,197,187,0.16),0 0 24px rgba(102,204,255,0.18)}
+.qc.on{border-color:rgba(0,206,209,0.52);box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 18px 48px rgba(57,197,187,0.16),0 0 0 1px rgba(0,206,209,0.16),0 0 30px rgba(102,204,255,0.28)}
+.qhd{
+  padding:16px 22px;cursor:url(./miku-cursor-a.png) 16 16, pointer;display:flex;align-items:flex-start;gap:14px;user-select:none;
+}
+.qnum{
+  font-size:0.72em;font-weight:800;color:#05878b;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(57,197,187,0.18),rgba(102,204,255,0.2));border:1px solid rgba(57,197,187,0.24);border-radius:999px;flex-shrink:0;
+  box-shadow:0 0 18px rgba(57,197,187,0.16);
+}
+.qbd{flex:1;min-width:0}
+.qtt{font-size:0.9em;font-weight:700;line-height:1.55;color:var(--t1)}
+.qmt{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:999px;font-size:0.67em;font-weight:700;border:1px solid rgba(57,197,187,0.18);box-shadow:0 0 14px rgba(57,197,187,0.08)}
+.tc{background:rgba(102,204,255,0.16);color:#1c7593;border-color:rgba(102,204,255,0.24)}
+.tl{background:rgba(57,197,187,0.14);color:#078d91;border-color:rgba(57,197,187,0.2)}
+.th{background:rgba(255,183,197,0.3);color:#d84d75;border-color:rgba(255,183,197,0.46);box-shadow:0 0 16px rgba(255,183,197,0.18)}
+.qch{color:var(--t3);font-size:0.75em;transition:transform 0.22s ease,color 0.22s ease;margin-top:5px;flex-shrink:0}
+.qc.on .qch{transform:rotate(90deg);color:var(--ac2)}
+
+.qa{display:none;padding:0 22px 0 66px;border-top:1px solid var(--br);background:rgba(255,255,255,0.34);overflow:hidden}
+.qc.on .qa{display:block;animation:slideDown 0.26s ease}
+@keyframes slideDown{0%{opacity:0;max-height:0;transform:translateY(-6px)}100%{opacity:1;max-height:1600px;transform:translateY(0)}}
+.ab{padding:13px 16px;border-radius:12px;border-left:3px solid;margin:14px 0;background:rgba(255,255,255,0.58);box-shadow:inset 0 1px 0 rgba(255,255,255,0.86),0 8px 22px rgba(57,197,187,0.08)}
+.ab.nv{background:rgba(255,183,197,0.16);border-color:var(--pk)}
+.ab.ex{background:rgba(181,234,215,0.26);border-color:var(--gr)}
+.ab h4{font-size:0.78em;font-weight:700;margin-bottom:6px}
+.ab.nv h4{color:var(--or)}
+.ab.ex h4{color:var(--gr)}
+.ab p,.ab li{font-size:0.83em;color:var(--t2);line-height:1.75}
+.ab ul,.ab ol{padding-left:18px;margin:5px 0}
+.ab li{margin:3px 0}
+.ab code{background:rgba(255,255,255,0.72);padding:2px 7px;border-radius:6px;font-size:0.88em;color:#078d91;font-family:'JetBrains Mono',Consolas,monospace;border:1px solid rgba(57,197,187,0.18)}
+.ab pre{background:rgba(255,255,255,0.72);padding:12px;border-radius:10px;overflow-x:auto;font-size:0.8em;margin:7px 0;border:1px solid var(--br)}
+.ab pre::-webkit-scrollbar{height:6px}
+.ab pre::-webkit-scrollbar-track{background:transparent}
+.ab pre::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--ac),var(--cy));border-radius:999px}
+.ab strong{color:#12363b}
+.ab table{width:100%;border-collapse:collapse;margin:8px 0;font-size:0.82em}
+.ab th{background:rgba(57,197,187,0.12);padding:7px 10px;text-align:left;font-weight:600;color:var(--t1);border-bottom:1px solid var(--br)}
+.ab td{padding:7px 10px;border-bottom:1px solid var(--br)}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;color:var(--t2)}
+.empty .e{font-size:4.5em;margin-bottom:16px;animation:fl 2s infinite;filter:drop-shadow(0 0 18px rgba(57,197,187,0.3))}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+.load{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--t3);gap:10px}
+.spin{width:18px;height:18px;border:2px solid var(--br);border-top-color:var(--ac);border-radius:50%;animation:sp 0.6s linear infinite;box-shadow:0 0 16px rgba(57,197,187,0.25)}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{width:100%;min-width:100%;height:auto;max-height:35vh}
+  .main{height:auto}
+  .content{padding:14px}
+  .qa{padding-left:20px}
+}
+</style>
+</head>
+<body>
+
+<img class="miku-watermark" src="./miku-chibi.png" alt="" aria-hidden="true">
+
+<aside class="sidebar">
+  <div class="sb-hd">
+    <div class="miku-avatar-wrap">
+      <img class="miku-avatar" src="./miku-chibi.png" alt="初音未来 Q版装饰" width="112" height="112" decoding="async">
+    </div>
+    <h1>🎤 <span>Miku 题库浏览 ♪</span></h1>
+    <p>AI Agent 大厂面试 · 245+ 题 ♫</p>
+  </div>
+  <nav class="sb-nav" id="topic-nav">
+    <div class="sb-sec">📂 专题分类</div>
+  </nav>
+  <div class="sb-ft">
+    <a href="./study.html">🎯 Miku 每日背诵 ♪</a><br>
+    <a href="https://onefly.top/zero2Agent/learn-agent-interview/" target="_blank">📖 zero2Agent 原文</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="main-top">
+    <h2>AI Agent 大厂面试高频题库</h2>
+    <div class="right">
+      <button class="btn" onclick="expandAll()">📖 展开全部</button>
+      <button class="btn" onclick="collapseAll()">📕 收起全部</button>
+      <button class="btn btn-p" onclick="location.href='./study.html'">🎯 去背诵</button>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <input class="search-input" id="search" placeholder="🔍 搜索题目、公司、知识点..." oninput="doSearch()">
+  </div>
+  <div class="content" id="area"><div class="load"><div class="spin"></div> Miku 正在调取题库 ♪</div></div>
+</div>
+
+<script>
+const A='';
+let allTopics=[],allQuestions=[],activeCat='all';
+
+async function api(m,p){return (await fetch(A+p)).json()}
+
+async function init(){
+  allTopics=await api('GET','/api/topics');
+  allQuestions=[];
+  for(const t of allTopics){
+    const d=await api('GET',`/api/topics/${t.id}/questions?limit=100`);
+    if(!d.empty) allQuestions.push(...d.questions.map(q=>({...q,topic_name:t.name,topic_icon:t.icon})));
+  }
+  drawSidebar();
+  render();
+}
+
+function drawSidebar(){
+  const n=document.getElementById('topic-nav');
+  let html=`<div class="sb-sec">📂 专题分类</div>
+  <a class="sb-item on" href="#" onclick="filterCat('all',this);return false">
+    <span class="sb-ic">📋</span><span class="sb-nm">全部题目</span>
+    <span class="sb-badge">${allQuestions.length}</span>
+  </a>`;
+  allTopics.forEach(t=>{
+    const cnt=allQuestions.filter(q=>q.topic_id===t.id).length;
+    html+=`<a class="sb-item" href="#" onclick="filterCat(${t.id},this);return false">
+      <span class="sb-ic">${t.icon||'📚'}</span><span class="sb-nm">${t.name}</span>
+      <span class="sb-badge">${cnt}</span>
+    </a>`;
+  });
+  n.innerHTML=html;
+}
+
+function filterCat(cat,el){
+  activeCat=cat;
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('search').value='';
+  render();
+}
+
+function doSearch(){
+  activeCat='all';
+  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
+  document.querySelector('.sb-item').classList.add('on');
+  render();
+}
+
+function render(){
+  const term=(document.getElementById('search').value||'').toLowerCase();
+  let qs=allQuestions;
+  if(activeCat!=='all') qs=qs.filter(q=>q.topic_id===activeCat);
+  if(term) qs=qs.filter(q=>
+    q.question_text.toLowerCase().includes(term)||
+    (q.companies||[]).some(c=>c.toLowerCase().includes(term))||
+    (q.topic_name||'').toLowerCase().includes(term)
+  );
+
+  if(!qs.length){
+    document.getElementById('area').innerHTML=`<div class="empty"><div class="e">🔍</div><h3 style="color:var(--t1)">没找到匹配的题目</h3><p style="color:var(--t3)">换个关键词试试看 ♪</p></div>`;
+    return;
+  }
+
+  let html='';
+  if(activeCat==='all'&&!term){
+    allTopics.forEach(t=>{
+      const tqs=qs.filter(q=>q.topic_id===t.id);
+      if(!tqs.length)return;
+      html+=`<div class="cat-sec">
+        <div class="cat-hd"><span class="ic">${t.icon||'📚'}</span><span class="nm">${t.name}</span><span class="ct">${tqs.length} 题</span></div>`;
+      tqs.forEach((q,i)=>html+=card(q,i));
+      html+=`</div>`;
+    });
+  }else{
+    qs.forEach((q,i)=>html+=card(q,i));
+  }
+  document.getElementById('area').innerHTML=html;
+}
+
+function card(q,i){
+  const cs=(q.companies||[]).filter(c=>c).map(c=>`<span class="tag tc">🏢 ${c}</span>`).join('');
+  return `<div class="qc" id="c${q.id}">
+    <div class="qhd" onclick="toggle(${q.id})">
+      <span class="qnum">${String(i+1).padStart(2,'0')}</span>
+      <div class="qbd">
+        <div class="qtt">${q.question_text}</div>
+        <div class="qmt">${cs}<span class="tag tl">${q.level||'medium'}</span>${q.hot?'<span class="tag th">🔥 高频</span>':''}<span class="tag" style="background:rgba(102,204,255,0.14);color:#1c7593;border-color:rgba(102,204,255,0.22)">${q.topic_name||''}</span></div>
+      </div>
+      <span class="qch">▶</span>
+    </div>
+    <div class="qa" id="a${q.id}">
+      <div class="ab nv"><h4>🙋 新手回答</h4><div>${q.novice_answer||'无'}</div></div>
+      <div class="ab ex"><h4>🎓 高手回答</h4><div>${q.expert_answer||'无'}</div></div>
+    </div>
+  </div>`;
+}
+
+function toggle(id){document.getElementById('c'+id).classList.toggle('on')}
+function expandAll(){document.querySelectorAll('.qc').forEach(c=>c.classList.add('on'))}
+function collapseAll(){document.querySelectorAll('.qc').forEach(c=>c.classList.remove('on'))}
+
+init();
+</script>
+</body>
+</html>
