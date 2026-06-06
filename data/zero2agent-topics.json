@@ -1,0 +1,33 @@
+{
+  "source": "https://github.com/ranxi2001/zero2Agent",
+  "source_url": "https://onefly.top/zero2Agent/learn-agent-interview/",
+  "crawled_at": "2026-06-02T09:48:00+08:00",
+  "total_articles": 15,
+  "total_questions": "245+",
+  "topics": [
+    {"id": "01", "title": "架构设计与选型", "english": "Architecture Design", "questions": "ReAct vs Plan-Execute, ToT, 路径规划, 推理架构, 模型vs Agent区别"},
+    {"id": "02", "title": "工具管理与MCP", "english": "Tool Management & MCP", "questions": "工具注册/发现/调用, MCP协议, 参数校验, 工具描述设计, 百级工具路由"},
+    {"id": "03", "title": "容错与鲁棒性", "english": "Fault Tolerance", "questions": "幻觉治理, Human-in-the-Loop, Self-Reflection, 安全权限, 降级策略"},
+    {"id": "04", "title": "记忆与上下文", "english": "Memory & Context", "questions": "长短期记忆, 滑动窗口, 摘要压缩, 上下文污染, Prompt Caching"},
+    {"id": "05", "title": "评估与全局观", "english": "Evaluation & Vision", "questions": "Agent评估指标, 端到端成功率, 多模态Agent, 落地最大挑战"},
+    {"id": "06", "title": "多智能体协作", "english": "Multi-Agent Collaboration", "questions": "角色分工, Handoff, 黑板模式, A2A协议, SubAgent设计, 编排路由"},
+    {"id": "07", "title": "工程化踩坑", "english": "Engineering Pitfalls", "questions": "死循环, 状态丢失, JSON解析, 成本控制, Demo到生产, API延迟"},
+    {"id": "08", "title": "Prompt工程与Skills", "english": "Prompt Engineering & Skills", "questions": "提示词模板, Skills机制, Claude Code架构, Harness Engineering"},
+    {"id": "09", "title": "RAG与检索系统", "english": "RAG & Retrieval", "questions": "Chunk设计, Embedding/ReRank微调, 混合召回, 查询改写, GraphRAG"},
+    {"id": "10", "title": "训练与模型优化", "english": "Training & Model Optimization", "questions": "LoRA微调, DPO/PPO/GRPO对齐, 数据清洗, Transformer基础"},
+    {"id": "11", "title": "AI代码测试", "english": "AI Code Testing", "questions": "分支覆盖率, 代码插桩, 前置分析, 代码过滤, 正确性验证"},
+    {"id": "12", "title": "业务AI工程分析", "english": "Business AI Engineering", "questions": "方案选型, 效果评估, AB测试, 智能客服, Demo到企业级落地"},
+    {"id": "13", "title": "简历项目拷打", "english": "Project Deep Dive", "questions": "框架选型, 意图识别, 知识库构建, 分块策略, ReAct实践, 性能优化"},
+    {"id": "14", "title": "各公司面试偏好", "english": "Company Preferences", "questions": "腾讯/蚂蚁/字节/淘天/快手/阿里国际/淘宝闪购等公司高频题速查"},
+    {"id": "15", "title": "前沿概念考察", "english": "Cutting-edge Concepts", "questions": "Harness Engineering, Context Engineering, MCP vs A2A, Skills体系, SDD"}
+  ],
+  "companies": {
+    "腾讯": {"total": 51, "top": "RAG(16) > 评估(8) > 工程(6)", "style": "系统设计能力，从架构到细节逐层追问"},
+    "蚂蚁集团": {"total": 48, "top": "工具(7) > 容错(6) > RAG(6)", "style": "全栈工程考察，AI Coding实操"},
+    "字节跳动": {"total": 31, "top": "记忆(7) > 架构/Prompt/RAG(各4)", "style": "项目深挖+工程踩坑经验"},
+    "阿里-淘天": {"total": 26, "top": "记忆(6) > RAG(4) > 架构(3)", "style": "系统设计+理论深度，追问细节"},
+    "快手": {"total": 18, "top": "训练(6) > RAG(5)", "style": "算法基础扎实，工程+模型并重"},
+    "淘宝闪购": {"total": 17, "top": "项目拷打(12) > 架构(2)", "style": "几乎全程项目深挖，无八股"},
+    "阿里国际": {"total": "14+", "top": "训练(10+) > 工具(2) > RAG(2)", "style": "RL/微调深度+GRPO必考"}
+  }
+}
