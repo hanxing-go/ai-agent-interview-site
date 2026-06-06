@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>面经背诵 — AI Agent 大厂面试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080e1a; --s1:#0f1929; --s2:#162239;
+  --br:#1e3050; --br2:#2a4570;
+  --t1:#f0f4ff; --t2:#94a3c0; --t3:#54688a;
+  --ac:#7c8aff; --ac2:#5b6af0;
+  --gr:#2dd4a0; --or:#fb923c; --rd:#f87171; --cy:#22d3ee;
+  --r:10px;
+}
+html,body{height:100%;width:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--bg); color:var(--t1); line-height:1.65;
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:272px; min-width:272px; height:100vh;
+  background:var(--s1); border-right:1px solid var(--br);
+  display:flex; flex-direction:column; flex-shrink:0;
+}
+.sb-hd{
+  padding:22px 20px 18px;
+  border-bottom:1px solid var(--br);
+  background:linear-gradient(180deg, rgba(124,138,255,0.06) 0%, transparent 100%);
+}
+.sb-hd h1{font-size:1.15em;font-weight:800;letter-spacing:-0.02em}
+.sb-hd h1 span{background:linear-gradient(135deg,var(--ac),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-hd p{font-size:0.7em;color:var(--t3);margin-top:2px}
+.sb-nav{flex:1;overflow-y:auto;padding:8px 12px}
+.sb-nav::-webkit-scrollbar{width:4px}
+.sb-nav::-webkit-scrollbar-thumb{background:var(--br);border-radius:2px}
+.sb-sec{font-size:0.65em;letter-spacing:0.12em;color:var(--t3);padding:14px 10px 6px;font-weight:700}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;
+  border-radius:8px;cursor:pointer;font-size:0.82em;color:var(--t2);
+  transition:all 0.15s;text-decoration:none;margin-bottom:1px;
+}
+.sb-item:hover{background:var(--s2);color:var(--t1)}
+.sb-item.on{background:rgba(124,138,255,0.1);color:var(--ac);font-weight:600;border:1px solid rgba(124,138,255,0.15)}
+.sb-item.done .sb-nm{color:var(--gr)}
+.sb-ic{font-size:1em;width:22px;text-align:center;flex-shrink:0}
+.sb-nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-badge{font-size:0.68em;color:var(--t3);background:var(--bg);padding:2px 8px;border-radius:8px;min-width:32px;text-align:center;flex-shrink:0}
+.sb-item.done .sb-badge{background:rgba(45,212,160,0.12);color:var(--gr)}
+.sb-ft{padding:14px 20px;border-top:1px solid var(--br);font-size:0.7em;color:var(--t3)}
+.sb-ft a{color:var(--ac);text-decoration:none}
+.sb-ft a:hover{opacity:0.8}
+
+/* MAIN */
+.main{flex:1;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.main-top{
+  padding:18px 28px 16px;border-bottom:1px solid var(--br);
+  background:var(--s1);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.main-top h2{font-size:1.15em;font-weight:700;display:flex;align-items:center;gap:8px}
+.main-top .sub{font-size:0.75em;color:var(--t3);margin-left:4px}
+.main-top .right{display:flex;gap:8px;align-items:center}
+
+.stats-row{display:flex;gap:0;border-radius:var(--r);overflow:hidden;border:1px solid var(--br)}
+.stats-row .st{padding:8px 16px;background:var(--s2);text-align:center;border-right:1px solid var(--br)}
+.stats-row .st:last-child{border-right:none}
+.stats-row .st .v{font-size:1.15em;font-weight:800}
+.stats-row .st .l{font-size:0.62em;color:var(--t3);letter-spacing:0.05em}
+
+.btn{
+  padding:8px 15px;border-radius:7px;border:1px solid var(--br);
+  background:var(--s2);color:var(--t2);cursor:pointer;
+  font-size:0.78em;transition:all 0.15s;white-space:nowrap;
+  font-family:inherit;display:inline-flex;align-items:center;gap:5px;
+}
+.btn:hover{background:#1e3050;color:var(--t1);border-color:var(--br2)}
+.btn-p{background:linear-gradient(135deg,var(--ac2),var(--ac));color:#fff;border:none;font-weight:600}
+.btn-p:hover{opacity:0.9;box-shadow:0 4px 14px rgba(91,106,240,0.3)}
+.btn-g{color:var(--gr);border-color:rgba(45,212,160,0.2);background:rgba(45,212,160,0.06)}
+.btn-g:hover{background:rgba(45,212,160,0.12)}
+
+.prog-wrap{padding:0 28px;flex-shrink:0}
+.prog-bar{height:3px;background:var(--br);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ac2),var(--cy));transition:width 0.5s}
+
+.content{flex:1;overflow-y:auto;padding:20px 28px 32px}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--br);border-radius:3px}
+
+/* Empty */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center}
+.empty .e{font-size:4.5em;margin-bottom:16px;animation:fl 2s infinite}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.empty h3{font-size:1.3em;margin-bottom:6px}
+.empty p{color:var(--t3);margin-bottom:20px;max-width:360px}
+
+/* Question Card */
+.qc{
+  background:var(--s1);border:1px solid var(--br);
+  border-radius:var(--r);margin-bottom:12px;overflow:hidden;
+  transition:all 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+.qc:hover{border-color:var(--br2)}
+.qc.on{border-color:#3d4f8a;box-shadow:0 0 0 1px rgba(124,138,255,0.08)}
+.qc.done{opacity:0.5;background:var(--bg);border-color:rgba(45,212,160,0.2)}
+.qhd{
+  padding:16px 22px;cursor:pointer;
+  display:flex;align-items:flex-start;gap:14px;user-select:none;
+}
+.qnum{
+  font-size:0.72em;font-weight:800;color:var(--ac);
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  background:rgba(124,138,255,0.08);border-radius:7px;flex-shrink:0;
+}
+.qbd{flex:1;min-width:0}
+.qtt{font-size:0.9em;font-weight:600;line-height:1.55}
+.qmt{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 9px;border-radius:5px;font-size:0.67em;font-weight:600}
+.tc{background:rgba(124,138,255,0.1);color:#a5b4fc}
+.tl{background:rgba(124,138,255,0.06);color:var(--ac)}
+.th{background:rgba(248,113,113,0.1);color:var(--rd)}
+.qch{color:var(--t3);font-size:0.75em;transition:transform 0.2s;margin-top:5px;flex-shrink:0}
+.qc.on .qch{transform:rotate(90deg)}
+
+.qa{display:none;padding:0 22px 0 66px;border-top:1px solid var(--br)}
+.qc.on .qa{display:block}
+.ab{padding:13px 16px;border-radius:8px;border-left:3px solid;margin:14px 0}
+.ab.nv{background:rgba(251,146,60,0.04);border-color:var(--or)}
+.ab.ex{background:rgba(45,212,160,0.04);border-color:var(--gr)}
+.ab h4{font-size:0.78em;font-weight:700;margin-bottom:6px}
+.ab.nv h4{color:var(--or)}
+.ab.ex h4{color:var(--gr)}
+.ab p,.ab li{font-size:0.83em;color:var(--t2);line-height:1.75}
+.ab ul,.ab ol{padding-left:18px;margin:5px 0}
+.ab li{margin:3px 0}
+.ab code{background:rgba(0,0,0,0.35);padding:2px 7px;border-radius:4px;font-size:0.88em;color:var(--cy);font-family:'JetBrains Mono',Consolas,monospace}
+.ab pre{background:rgba(0,0,0,0.4);padding:12px;border-radius:7px;overflow-x:auto;font-size:0.8em;margin:7px 0;border:1px solid var(--br)}
+.ab strong{color:#e2e8f0}
+.ab table{width:100%;border-collapse:collapse;margin:8px 0;font-size:0.82em}
+.ab th{background:rgba(0,0,0,0.25);padding:7px 10px;text-align:left;font-weight:600;color:var(--t1);border-bottom:1px solid var(--br)}
+.ab td{padding:7px 10px;border-bottom:1px solid var(--br)}
+
+.qac{display:flex;gap:8px;padding:0 22px 14px 66px}
+
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,var(--ac2),var(--ac));
+  color:#fff;padding:10px 24px;border-radius:20px;
+  font-weight:600;font-size:0.85em;opacity:0;transition:opacity 0.3s;
+  z-index:99;pointer-events:none;box-shadow:0 6px 20px rgba(91,106,240,0.35);
+}
+.toast.s{opacity:1}
+
+.load{display:flex;align-items:center;justify-content:center;padding:60px;color:var(--t3);gap:10px}
+.spin{width:18px;height:18px;border:2px solid var(--br);border-top-color:var(--ac);border-radius:50%;animation:sp 0.6s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  body{flex-direction:column}
+  .sidebar{width:100%;min-width:100%;height:auto;max-height:35vh}
+  .main{height:auto}
+  .content{padding:14px}
+  .main-top{padding:14px;flex-direction:column;align-items:flex-start}
+  .qa{padding-left:20px}
+  .qac{padding-left:20px}
+  .stats-row{width:100%}
+  .stats-row .st{flex:1;padding:6px 10px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sb-hd">
+    <h1>📝 <span>面经背诵</span></h1>
+    <p>逐个专题啃透 · 每天 5 题</p>
+  </div>
+  <nav class="sb-nav" id="topic-nav">
+    <div class="sb-sec">📂 专题列表</div>
+  </nav>
+  <div class="sb-ft">
+    <a href="./index.html">📋 题库浏览</a>
+    <br><span id="sb-status" style="font-size:0.9em"></span>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="main-top">
+    <div>
+      <h2 id="top-title">🎯 加载中...</h2>
+      <span class="sub" id="top-meta"></span>
+    </div>
+    <div class="right">
+      <div class="stats-row">
+        <div class="st"><div class="v" id="s1" style="color:var(--ac)">0</div><div class="l">总题库</div></div>
+        <div class="st"><div class="v" id="s2" style="color:var(--gr)">0</div><div class="l">已掌握</div></div>
+        <div class="st"><div class="v" id="s3" style="color:var(--ac)">0</div><div class="l">今日</div></div>
+        <div class="st"><div class="v" id="s4" style="color:var(--cy)">0%</div><div class="l">进度</div></div>
+      </div>
+      <button class="btn btn-p" onclick="markAll()">✅ 全部完成</button>
+      <button class="btn" onclick="refresh()">🔄 换题</button>
+      <button class="btn btn-g" onclick="reset()">🔁 重置</button>
+    </div>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pbar" style="width:0%"></div></div></div>
+  <div class="content" id="area"><div class="load"><div class="spin"></div> 加载中...</div></div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const A='';
+let tid=null,qs=[];
+async function api(m,p,b){
+  const o={method:m,headers:{'Content-Type':'application/json'}};
+  if(b)o.body=JSON.stringify(b);
+  return (await fetch(A+p,o)).json();
+}
+async function init(){await loadTopics();await loadDaily();await loadStats()}
+
+async function loadTopics(){
+  const ts=await api('GET','/api/topics');
+  const n=document.getElementById('topic-nav');
+  n.querySelectorAll('.sb-item').forEach(e=>e.remove());
+  ts.forEach(t=>{
+    const a=document.createElement('a');
+    a.className='sb-item';if(t.id===tid)a.classList.add('on');if(t.completed)a.classList.add('done');
+    a.href='#';a.onclick=e=>{e.preventDefault();switchTopic(t.id)};
+    a.innerHTML=`
+      <span class="sb-ic">${t.icon||'📚'}</span>
+      <span class="sb-nm">${t.name}${t.completed?' ✓':''}</span>
+      <span class="sb-badge">${t.learned}/${t.total}</span>`;
+    n.appendChild(a);
+  });
+  document.getElementById('sb-status').textContent=
+    '🟢 运行中 · '+new Date().toLocaleDateString('zh-CN',{month:'short',day:'numeric'});
+}
+
+async function loadDaily(){
+  const d=await api('GET','/api/daily');
+  if(d.empty){
+    tid=d.topic?.id||null;
+    const nx=d.next_topic;
+    document.getElementById('area').innerHTML=`
+      <div class="empty"><div class="e">🎉</div><h3>${d.message}</h3>
+      ${nx?`<p>下一个：<strong style="color:var(--ac)">${nx.name}</strong></p>
+      <button class="btn btn-p" onclick="switchTopic(${nx.id})">🚀 开始</button>`
+      :`<p>🏆 全部学完！</p><button class="btn" onclick="resetAll()">🔁 重新开始</button>`}</div>`;
+    updateHdr(d.topic,d.progress);return;
+  }
+  tid=d.topic.id;qs=d.questions;updateHdr(d.topic,d.progress);render();
+  await loadTopics();
+}
+
+function updateHdr(t,p){
+  document.getElementById('top-title').innerHTML=`${t?.icon||'📚'} ${t?.name||''}`;
+  document.getElementById('top-meta').textContent=
+    `📖 ${p?.learned||0}/${p?.total||0} 题  ·  ${new Date().toLocaleDateString('zh-CN',{weekday:'long',month:'long',day:'numeric'})}`;
+  const pc=p&&p.total>0?Math.round(p.learned/p.total*100):0;
+  document.getElementById('pbar').style.width=pc+'%';
+}
+
+function render(){
+  let h='';
+  qs.forEach((q,i)=>{
+    const cs=(q.companies||[]).filter(c=>c).map(c=>`<span class="tag tc">🏢 ${c}</span>`).join('');
+    h+=`
+    <div class="qc" id="c${q.id}">
+      <div class="qhd" onclick="toggle(${q.id})">
+        <span class="qnum">${String(i+1).padStart(2,'0')}</span>
+        <div class="qbd">
+          <div class="qtt">${q.question_text}</div>
+          <div class="qmt">${cs}<span class="tag tl">${q.level||'medium'}</span>${q.hot?'<span class="tag th">🔥 高频</span>':''}</div>
+        </div>
+        <span class="qch">▶</span>
+      </div>
+      <div class="qa" id="a${q.id}">
+        <div class="ab nv"><h4>🙋 新手回答</h4><div>${q.novice_answer||'无'}</div></div>
+        <div class="ab ex"><h4>🎓 高手回答</h4><div>${q.expert_answer||'无'}</div></div>
+      </div>
+      <div class="qac">
+        <button class="btn btn-g" onclick="event.stopPropagation();done(${q.id})" id="b${q.id}">✅ 已学会</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('area').innerHTML=h;
+}
+
+function toggle(id){document.getElementById('c'+id).classList.toggle('on')}
+async function done(id){
+  await api('POST','/api/progress',{question_id:id,status:'learned'});
+  const c=document.getElementById('c'+id);c.classList.add('done');
+  const b=document.getElementById('b'+id);b.textContent='✅ 已掌握';b.disabled=true;b.style.opacity='0.5';
+  toast('✅ 已标记！');await loadStats();await loadTopics();
+}
+async function markAll(){
+  for(const q of qs)await api('POST','/api/progress',{question_id:q.id,status:'learned'});
+  toast('🎉 全部完成！');await loadDaily();await loadStats();await loadTopics();
+}
+async function refresh(){
+  if(!tid)return;
+  const d=await api('GET',`/api/topics/${tid}/questions?limit=5`);
+  if(d.empty){toast(d.message);return}
+  qs=d.questions;render();await loadTopics();
+}
+async function reset(){
+  if(!tid||!confirm('重置本专题？'))return;
+  await api('POST',`/api/topics/${tid}/reset`);
+  toast('🔄 已重置');await loadDaily();await loadStats();await loadTopics();
+}
+async function switchTopic(id){
+  const d=await api('GET',`/api/topics/${id}/questions?limit=5`);
+  if(d.empty){document.getElementById('area').innerHTML=`<div class="empty"><div class="e">🎉</div><h3>${d.message}</h3></div>`;return}
+  tid=id;qs=d.questions;updateHdr(d.topic,d.progress);render();await loadTopics();
+}
+async function loadStats(){
+  const s=await api('GET','/api/stats');
+  document.getElementById('s1').textContent=s.total_questions;
+  document.getElementById('s2').textContent=s.total_learned;
+  document.getElementById('s3').textContent=s.today_learned;
+  document.getElementById('s4').textContent=s.progress_pct+'%';
+}
+function toast(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('s');
+  setTimeout(()=>t.classList.remove('s'),2000);
+}
+init();
+</script>
+</body>
+</html>
