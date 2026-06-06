@@ -77,3 +77,16 @@ python seed_db.py
 ## Notes
 
 本项目用于个人学习与面试准备。抓取脚本仅保存公开搜索结果链接摘要；请注意遵守目标网站条款与版权要求。
+
+
+## Contributing
+
+欢迎一起共建 AI Agent 面经知识库！
+
+- 投稿面试题：使用 GitHub Issue 模板 `面试题投稿`
+- 投稿真实面经：使用 GitHub Issue 模板 `真实面经投稿`
+- 修改代码/页面：提交 Pull Request
+- 内容标准：见 [docs/content-standard.md](docs/content-standard.md)
+- 项目路线图：见 [docs/roadmap.md](docs/roadmap.md)
+
+请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。
