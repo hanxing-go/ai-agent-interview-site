@@ -1,0 +1,31 @@
+[
+  {
+    "id": "project-deep-dive-001",
+    "topic_id": 13,
+    "question": "你的 Agent 项目用了什么框架？为什么选它？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 1,
+    "novice_answer": "用了 LangChain，因为最流行。",
+    "expert_answer": "如果用了框架：因为初期需要快速验证（Tool抽象/Memory模块省boilerplate），但后期遇到调试困难（链式抽象堆栈不直观）、定制化成本高（改写AgentExecutor比从头写还麻烦）、API变动频繁。后来关键模块改成自己实现。如果没用框架：核心循环500-800行代码，自己写更可控、可调试、灵活（自定义重试策略+错误恢复）。面试官考的是 trade-off 评估能力，不是考你用了什么。",
+    "companies": [
+      "淘宝闪购一面",
+      "CVTE一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "project-deep-dive-002",
+    "topic_id": 13,
+    "question": "你的项目上线后效果怎么样？",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 2,
+    "novice_answer": "做了个 demo，效果挺好的。",
+    "expert_answer": "上线部署（FastAPI+容器化+全链路trace），跟踪核心指标：端到端完成率~75%、平均工具调用2.3次/任务、响应时间4-8秒。上线后做了三轮迭代：① 加输入预处理和意图兜底→② 优化工具调用错误恢复→③ 加对话历史压缩。Demo到生产的最大区别：边界情况暴增+用户输入远比测试集复杂。",
+    "companies": [
+      "淘宝闪购一面"
+    ],
+    "tags": []
+  }
+]

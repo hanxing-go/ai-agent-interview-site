@@ -1,0 +1,31 @@
+[
+  {
+    "id": "ai-code-testing-001",
+    "topic_id": 11,
+    "question": "分支覆盖率怎么统计？代码插桩原理？",
+    "difficulty": "medium",
+    "hot": 2,
+    "sort_order": 1,
+    "novice_answer": "用 coverage 工具跑一下就行。",
+    "expert_answer": "四个阶段：① 解析（AST识别所有分支点——if/else/switch/三元/短路）→ ② 插桩（每个分支入口插入计数器代码）→ ③ 执行（运行插桩代码，记录分支被执行的次数）→ ④ 统计（汇总计数器计算覆盖率）。实现方式：源码级（Istanbul/coverage.py，AST改写）和字节码级（JaCoCo，类加载时修改字节码，性能开销更小）。",
+    "companies": [
+      "抖音一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "ai-code-testing-002",
+    "topic_id": 11,
+    "question": "AI 生成的代码怎么验证正确性？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 2,
+    "novice_answer": "跑一下看能不能通过。",
+    "expert_answer": "三层验证：① 静态验证（零成本秒级）：类型检查/lin/安全扫描/Import检查→② 动态验证（中成本分钟级）：回归测试+AI自生成测试+属性测试→③ 语义验证（高成本但最可靠）：Spec对比+变异测试+人工抽检。AI代码最危险的不是编译报错，而是「看起来能跑但行为不对」——所以在语义验证层要比人写代码投入更多精力。",
+    "companies": [
+      "蚂蚁一面",
+      "字节一面"
+    ],
+    "tags": []
+  }
+]

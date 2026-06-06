@@ -1,0 +1,79 @@
+[
+  {
+    "id": "architecture-design-001",
+    "topic_id": 1,
+    "question": "Agent和RAG有什么区别？各自的适用场景是什么？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 1,
+    "novice_answer": "Agent可以自主执行多步操作，RAG主要是检索+生成的模式。Agent更灵活。",
+    "expert_answer": "Agent = LLM + Planning + Memory + Tool Use（自主决策、多步执行）。RAG = 检索(Retrieval) + 生成(Generation)（查资料回答问题）。Agent 适合开放性任务（旅行规划、自动化运维），RAG 适合知识密集型问答（客服、文档问答）。两者可以结合：RAG 为 Agent 提供知识基础。关键判断标准：需要多步决策→Agent；只需基于资料回答→RAG。",
+    "companies": [
+      "字节一面",
+      "蚂蚁一面",
+      "阿里一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "architecture-design-002",
+    "topic_id": 1,
+    "question": "ReAct模式和Plan-and-Execute模式的核心区别？",
+    "difficulty": "medium",
+    "hot": 5,
+    "sort_order": 2,
+    "novice_answer": "ReAct是边想边做，Plan是先规划再执行。",
+    "expert_answer": "ReAct：Thought → Action → Observation 循环，每步基于上一步结果动态决策，适合不确定性高、需要灵活应变的开放任务。Plan-and-Execute：Planner 一次性生成完整步骤 → Executor 按序执行，适合流程固定、确定性高的任务。核心差异：信息不完备度。开环（ReAct）vs 闭环（Plan）。生产实践：宏观用 Plan-and-Execute 做任务分解，微观用 ReAct 处理每个步骤。",
+    "companies": [
+      "腾讯终面",
+      "字节二面",
+      "淘天二面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "architecture-design-003",
+    "topic_id": 1,
+    "question": "Agent 由哪些核心模块组成？请从学术角度回答",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 3,
+    "novice_answer": "大模型加上工具调用和记忆。",
+    "expert_answer": "按 Lilian Weng 综述框架：Agent = LLM（大脑）+ Planning（规划）+ Memory（记忆）+ Tool Use（工具）。LLM 是核心推理引擎；Planning 负责任务分解和自我反思；Memory 分短期（上下文窗口）和长期（外部存储+检索）；Tool Use 让 Agent 调用外部能力。工业界扩展：Perception（多模态感知）+ Action（副作用控制）。面试官要听的是你对 Agent 结构化认知，不是「LLM + Prompt」。",
+    "companies": [
+      "字节一面",
+      "蚂蚁一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "architecture-design-004",
+    "topic_id": 1,
+    "question": "Agent 有哪四种设计范式？怎么选？",
+    "difficulty": "medium",
+    "hot": 2,
+    "sort_order": 4,
+    "novice_answer": "ReAct、Plan-and-Execute，还有别的吗。",
+    "expert_answer": "四种范式：① ReAct（边走边看）→ 开放任务、不确定性高；② Plan-and-Execute（先规划再执行）→ 流程固定、确定性高；③ Reflexion/Self-Refine（自我反思修正）→ 质量要求高（代码、文案）；④ 多Agent协作 → 需要多视角的复杂任务。实际工程是混合范式：宏观 Plan-and-Execute + 微观 ReAct + 关键输出 Reflexion。选择标准：决策路径是否在设计时可穷举。",
+    "companies": [
+      "字节一面",
+      "淘宝闪购一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "architecture-design-005",
+    "topic_id": 1,
+    "question": "Agent 和 Workflow 的边界在哪？为什么很多团队做到最后是混合架构？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 5,
+    "novice_answer": "复杂用 Agent，简单用 Workflow。",
+    "expert_answer": "判断标准不是复杂度，而是决策路径是否可穷举。Workflow 是「编排」——设计者画好流程图；Agent 是「委托」——给目标让系统自己决定怎么达成。生产系统中，80% 步骤是确定性的（权限校验、数据查询），20% 需要智能判断（意图理解、方案推荐）。混合架构：确定性环节用 Workflow（可靠、可测、低成本），不确定性环节嵌入 Agent 节点（灵活、智能）。",
+    "companies": [
+      "字节二面",
+      "腾讯二面"
+    ],
+    "tags": []
+  }
+]

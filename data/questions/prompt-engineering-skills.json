@@ -1,0 +1,32 @@
+[
+  {
+    "id": "prompt-engineering-skills-001",
+    "topic_id": 8,
+    "question": "提示词模板怎么构建的？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 1,
+    "novice_answer": "把任务描述和代码拼成 Prompt 发给模型。",
+    "expert_answer": "四层分离系统：① System Prompt 层（角色+输出格式+语言约束）→ ② 上下文注入层（源码/类型定义/已有用例，按需动态调整注入量）→ ③ 任务指令层（生成什么类型的测试，不同目标不同模板）→ ④ Few-shot 示例层（1-2个同风格示例对齐）。模板不是静态的——纯函数用轻量模板，有依赖函数自动加 mock 引导。模板需版本管理和 A/B 测试。",
+    "companies": [
+      "抖音基础架构一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "prompt-engineering-skills-002",
+    "topic_id": 8,
+    "question": "Skills 是什么？和 MCP 有什么区别？",
+    "difficulty": "medium",
+    "hot": 5,
+    "sort_order": 2,
+    "novice_answer": "Skills 就是预定义的 Prompt 模板。",
+    "expert_answer": "Skill = 触发条件 + Prompt模板 + 工具集合 + 输出约束 + 上下文策略。三层理解：① 结构化的 Prompt 模板 → ② 领域知识的封装 → ③ Agent 的「职业技能树」。MCP=给 Agent 提供工具（能做什么），Skill=给 Agent 提供知识和方法论（怎么做、为什么这样做）。类比：MCP是工具箱，Skill是操作手册。两者互补——Skill 中的工具调用通过 MCP 协议完成。",
+    "companies": [
+      "抖音一面",
+      "蚂蚁二面",
+      "小红书一面"
+    ],
+    "tags": []
+  }
+]

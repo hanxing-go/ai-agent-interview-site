@@ -58,6 +58,24 @@ fix: correct MCP answer
 /docs: update roadmap
 ```
 
+## 题库数据维护
+
+题库位于：
+
+```text
+data/topics.json
+data/questions/*.json
+```
+
+新增题目时，请优先修改对应专题的 JSON 文件，而不是直接修改数据库。
+
+提交前请运行：
+
+```bash
+python scripts/validate_questions.py
+python seed_db.py
+```
+
 ## Pull Request 自查
 
 提交 PR 前请确认：
@@ -65,6 +83,7 @@ fix: correct MCP answer
 - [ ] 没有提交 `backend/mianjing.db`
 - [ ] 没有提交日志文件
 - [ ] 没有提交 `.env` 或密钥
+- [ ] 已运行 `python scripts/validate_questions.py`
 - [ ] 内容来源合规，可公开分享
 - [ ] 新增题目符合 `docs/content-standard.md`
 - [ ] 页面/接口改动已本地验证

@@ -14,7 +14,7 @@ AI Agent Interview Site 的长期目标是成为一个面向 AI Agent / RAG / LL
 
 ## Phase 1：内容标准化
 
-- [ ] 将题库从 `seed_db.py` 拆分为 JSON/YAML
+- [x] 将题库从 `seed_db.py` 拆分为 JSON
 - [ ] 建立专题目录：Agent 基础 / RAG / MCP / Tool Calling / Memory / Multi-Agent / 工程化 / 项目深挖
 - [ ] 为每道题补充：新手版回答、专业版回答、考察点、易错点、追问
 - [ ] 建立 AI Agent Top 50 高频题

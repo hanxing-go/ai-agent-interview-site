@@ -1,0 +1,47 @@
+[
+  {
+    "id": "rag-retrieval-001",
+    "topic_id": 9,
+    "question": "RAG 的检索流程是怎样的？",
+    "difficulty": "easy",
+    "hot": 4,
+    "sort_order": 1,
+    "novice_answer": "用向量数据库做相似度搜索。",
+    "expert_answer": "离在线双链路。离线：文档清洗→切片→去重→embedding→向量入库。在线：query编码→向量召回+BM25关键词召回→混合合并去重→Rerank精排→证据拼接→LLM生成。切片策略核心：块太大召回不准，块太小上下文断裂。最佳实践：300-500 token + 语义边界切分 + 10-20% overlap。",
+    "companies": [
+      "阿里一面",
+      "腾讯一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "rag-retrieval-002",
+    "topic_id": 9,
+    "question": "如何提升 RAG 召回率？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 2,
+    "novice_answer": "换更好的 Embedding 模型。",
+    "expert_answer": "离线端：① 语义分块（按标题/段落）+overlap+元数据附加 → ② Embedding 微调（业务数据，Recall +10-20%）。在线端：① 多维度查询改写（意图/实体/同义/约束四角度）→ ② 混合召回（向量+BM25+标签）→ ③ HyDE（先让模型生成假设答案，用答案 embedding 去检索）。效果最大的三板斧：混合召回 > chunk 优化 > Embedding 微调。",
+    "companies": [
+      "蚂蚁一面",
+      "抖音一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "rag-retrieval-003",
+    "topic_id": 9,
+    "question": "RAG 为什么需要向量检索？和关键词检索有什么区别？",
+    "difficulty": "easy",
+    "hot": 3,
+    "sort_order": 3,
+    "novice_answer": "向量检索更准。",
+    "expert_answer": "不是「更准」，是解决不同问题。关键词检索（BM25）：词级精确匹配，适合查错误码/API名/文件路径；向量检索（Embedding）：语义级相似度，适合「服务器老挂」→「服务可用性异常」。关键洞察：向量检索在精确匹配上反而不如关键词检索。生产最佳实践是混合检索——向量路保语义覆盖，关键词路保精确命中。",
+    "companies": [
+      "蚂蚁一面",
+      "腾讯一面"
+    ],
+    "tags": []
+  }
+]

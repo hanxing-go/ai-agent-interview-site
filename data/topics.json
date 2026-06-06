@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "slug": "architecture-design",
+    "name": "架构设计与选型",
+    "english": "Architecture Design",
+    "icon": "🏗️",
+    "sort_order": 1
+  },
+  {
+    "id": 2,
+    "slug": "tool-management-mcp",
+    "name": "工具管理与 MCP",
+    "english": "Tool Management & MCP",
+    "icon": "🔧",
+    "sort_order": 2
+  },
+  {
+    "id": 3,
+    "slug": "fault-tolerance",
+    "name": "容错与鲁棒性",
+    "english": "Fault Tolerance",
+    "icon": "🛡️",
+    "sort_order": 3
+  },
+  {
+    "id": 4,
+    "slug": "memory-context",
+    "name": "记忆与上下文",
+    "english": "Memory & Context",
+    "icon": "🧠",
+    "sort_order": 4
+  },
+  {
+    "id": 5,
+    "slug": "evaluation",
+    "name": "评估与全局观",
+    "english": "Evaluation",
+    "icon": "📊",
+    "sort_order": 5
+  },
+  {
+    "id": 6,
+    "slug": "multi-agent",
+    "name": "多智能体协作",
+    "english": "Multi-Agent",
+    "icon": "🤝",
+    "sort_order": 6
+  },
+  {
+    "id": 7,
+    "slug": "engineering-pitfalls",
+    "name": "工程化踩坑",
+    "english": "Engineering Pitfalls",
+    "icon": "💣",
+    "sort_order": 7
+  },
+  {
+    "id": 8,
+    "slug": "prompt-engineering-skills",
+    "name": "Prompt 工程与 Skills",
+    "english": "Prompt Engineering",
+    "icon": "✍️",
+    "sort_order": 8
+  },
+  {
+    "id": 9,
+    "slug": "rag-retrieval",
+    "name": "RAG 与检索系统",
+    "english": "RAG & Retrieval",
+    "icon": "🔍",
+    "sort_order": 9
+  },
+  {
+    "id": 10,
+    "slug": "training-models",
+    "name": "训练与模型优化",
+    "english": "Training & Models",
+    "icon": "🏋️",
+    "sort_order": 10
+  },
+  {
+    "id": 11,
+    "slug": "ai-code-testing",
+    "name": "AI 代码测试",
+    "english": "AI Code Testing",
+    "icon": "🧪",
+    "sort_order": 11
+  },
+  {
+    "id": 12,
+    "slug": "business-ai-engineering",
+    "name": "业务 AI 工程",
+    "english": "Business AI Engineering",
+    "icon": "💼",
+    "sort_order": 12
+  },
+  {
+    "id": 13,
+    "slug": "project-deep-dive",
+    "name": "简历项目拷打",
+    "english": "Project Deep Dive",
+    "icon": "🎯",
+    "sort_order": 13
+  },
+  {
+    "id": 14,
+    "slug": "company-preferences",
+    "name": "公司面试偏好",
+    "english": "Company Preferences",
+    "icon": "🏢",
+    "sort_order": 14
+  },
+  {
+    "id": 15,
+    "slug": "cutting-edge-concepts",
+    "name": "前沿概念考察",
+    "english": "Cutting-edge Concepts",
+    "icon": "🚀",
+    "sort_order": 15
+  }
+]

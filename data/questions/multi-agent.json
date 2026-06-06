@@ -1,0 +1,32 @@
+[
+  {
+    "id": "multi-agent-001",
+    "topic_id": 6,
+    "question": "多智能体怎么协作？如何防止「踢皮球」？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 1,
+    "novice_answer": "一个写完发给另一个看就行。加个超时防止死循环。",
+    "expert_answer": "协作四要素：① 角色隔离（职责不交叉，审查员不改代码）→ ② 结构化通信（JSON消息：task_id/role/action）→ ③ 协作拓扑（顺序链/并行扇出/层级委托/动态路由）→ ④ 冲突收敛（仲裁者或人工介入）。防踢皮球：职责判定前置+交互轮次硬限制+状态机驱动流转+全局超时兜底。和微服务架构思路完全一致。",
+    "companies": [
+      "蚂蚁一面",
+      "腾讯二面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "multi-agent-002",
+    "topic_id": 6,
+    "question": "什么时候用 SubAgent？和直接调工具的区别？",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 2,
+    "novice_answer": "工具调用多就用 SubAgent。",
+    "expert_answer": "判断标准是上下文隔离的收益是否大于通信成本。需要 SubAgent：① 子任务产生大量中间结果但主任务只需结论（搜索10个文件找函数定义）→ ② 子任务上下文和主任务高度不相关 → ③ 需要并行处理独立子任务。本质上 SubAgent 是一种上下文管理策略——用进程隔离解决上下文污染问题。主 Agent 和子 Agent 不共用上下文，通过结构化消息通信。",
+    "companies": [
+      "蚂蚁一面",
+      "bilibili一面"
+    ],
+    "tags": []
+  }
+]

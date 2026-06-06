@@ -1,0 +1,30 @@
+[
+  {
+    "id": "company-preferences-001",
+    "topic_id": 14,
+    "question": "腾讯 Agent 面试的重点考察方向是什么？",
+    "difficulty": "medium",
+    "hot": 1,
+    "sort_order": 1,
+    "novice_answer": "RAG 和基础八股。",
+    "expert_answer": "腾讯覆盖面最广（51题）：① RAG 方向最强（16题）——Embedding/ReRank微调、双路召回TopK、GraphRAG是必考；② 系统设计能力突出——终面偏架构选型（ReAct vs Plan-Execute、ToT线上化成本）；③ 评估体系设计是高频追问——不只「准确率」，要有完整评测方案和归因分析。腾讯终面风格：从RAG系统设计往架构和细节逐层挖。",
+    "companies": [
+      "腾讯"
+    ],
+    "tags": []
+  },
+  {
+    "id": "company-preferences-002",
+    "topic_id": 14,
+    "question": "蚂蚁集团 Agent 面试的特色题是什么？",
+    "difficulty": "medium",
+    "hot": 1,
+    "sort_order": 2,
+    "novice_answer": "工具管理和 RAG。",
+    "expert_answer": "蚂蚁维度最全（48题、11个方向）：① 特色题：Skills 机制、SDD（Spec-Driven Development）、AI Coding 测试（代码插桩/覆盖率）→ 其他公司几乎不考；② MCP Server 构建和 Skill vs MCP 区别是蚂蚁高频；③ 安全权限管理和 Human-in-the-Loop 流程设计。不同团队侧重不同：AI Coding 团队（代码测试）/ 智能体平台（Skills+MCP）/ AI应用开发（全栈工程）。",
+    "companies": [
+      "蚂蚁"
+    ],
+    "tags": []
+  }
+]

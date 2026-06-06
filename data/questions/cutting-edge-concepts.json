@@ -1,0 +1,48 @@
+[
+  {
+    "id": "cutting-edge-concepts-001",
+    "topic_id": 15,
+    "question": "Harness Engineering 是什么？",
+    "difficulty": "hard",
+    "hot": 4,
+    "sort_order": 1,
+    "novice_answer": "好像是跟测试框架有关的。",
+    "expert_answer": "Harness = 「线束」，把散乱线缆约束成有序束。三层结构：① 约束层（Rules/安全护栏/权限白名单，告诉Agent什么不能做）→ ② 增强层（Skills/动态工具注册/上下文模板，提供可复用能力）→ ③ 验证层（可重复评测环境/自动打分/日志归因，确保行为符合预期）。核心思想：模型是引擎，Harness 是方向盘+安全带+仪表盘。把保障能力从模型内部迁移到外部工程体系。",
+    "companies": [
+      "快手一面",
+      "字节二面",
+      "腾讯一面",
+      "阿里淘天一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "cutting-edge-concepts-002",
+    "topic_id": 15,
+    "question": "Prompt Engineering、Context Engineering、Harness Engineering 三者区别？",
+    "difficulty": "hard",
+    "hot": 3,
+    "sort_order": 2,
+    "novice_answer": "Prompt Engineering 是写提示词，其他两个不太清楚。",
+    "expert_answer": "三代演进：① Prompt Engineering（2023）→ 解决「说什么」：怎么写指令让模型听话；② Context Engineering（2024）→ 解决「给什么」：怎么精准投喂信息（动态注入/渐进披露/记忆召回）；③ Harness Engineering（2025-2026）→ 解决「怎么保障」：用工程体系约束和增强（Rules/Skills/Hooks/评测/安全护栏）。不是替代关系，而是逐层递进——模型能力提升后，瓶颈从「怎么教」变成「怎么管」。",
+    "companies": [
+      "阿里淘天一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "cutting-edge-concepts-003",
+    "topic_id": 15,
+    "question": "MCP 和 A2A 分别解决什么问题？为什么需要两个协议？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 3,
+    "novice_answer": "MCP 调工具，A2A Agent 间通信。",
+    "expert_answer": "层次不同：MCP（Agent↔工具）→ 请求-响应模式/无状态/同步确定；A2A（Agent↔Agent）→ 任务委托模式/有状态（生命周期）/异步不确定。为什么不能合并：工具调用语义（「查天气」马上返回）vs Agent 协作语义（「做市场调研」需几分钟可能追问），差异太大。MCP 已成熟可用，A2A 还在早期快速迭代。架构：MCP 在底层（垂直）连接工具，A2A 在上层（水平）连接 Agent。",
+    "companies": [
+      "蚂蚁一面",
+      "币安一面"
+    ],
+    "tags": []
+  }
+]

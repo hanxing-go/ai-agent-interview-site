@@ -2,6 +2,22 @@
 
 本项目的核心不是收集尽可能多的题，而是沉淀可复习、可表达、可追问的高质量面试内容。
 
+## 文件位置
+
+题库数据放在：
+
+```text
+data/topics.json
+data/questions/*.json
+```
+
+贡献者新增题目时，应修改对应专题 JSON 文件，并运行：
+
+```bash
+python scripts/validate_questions.py
+python seed_db.py
+```
+
 ## 推荐题目结构
 
 每道题建议包含：

@@ -79,7 +79,11 @@ AI Agent 方向的面试题正在快速变化：
 ├── seed_db.py                       # 初始化题库数据
 ├── crawl.sh                         # 每日抓取公开面经链接摘要
 ├── data/
+│   ├── topics.json                  # 专题元数据
+│   ├── questions/                   # 结构化题库 JSON
 │   └── zero2agent-topics.json       # 专题数据示例
+├── scripts/
+│   └── validate_questions.py        # 题库数据校验
 ├── docs/
 │   ├── roadmap.md                   # 项目路线图
 │   └── content-standard.md          # 内容标准
@@ -114,13 +118,19 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Initialize database
+### 3. Validate question data
+
+```bash
+python scripts/validate_questions.py
+```
+
+### 4. Initialize database
 
 ```bash
 python seed_db.py
 ```
 
-### 4. Start backend
+### 5. Start backend
 
 ```bash
 python backend/app.py
@@ -132,7 +142,7 @@ python backend/app.py
 http://127.0.0.1:5001
 ```
 
-### 5. Open pages
+### 6. Open pages
 
 你可以直接打开：
 
@@ -159,6 +169,24 @@ study.html
 | `GET /api/stats` | 获取全局统计 |
 
 ---
+
+## Question Data
+
+题库已经拆成结构化 JSON，方便朋友和开源贡献者直接补题：
+
+```text
+data/topics.json
+data/questions/*.json
+```
+
+新增或修改题目后，请先运行：
+
+```bash
+python scripts/validate_questions.py
+python seed_db.py
+```
+
+每道题的字段规范见 [docs/content-standard.md](docs/content-standard.md)。
 
 ## Data and Runtime Files
 
@@ -271,7 +299,7 @@ Fork 仓库
 - [x] 开源仓库基础设施
 - [x] Issue / PR 模板
 - [x] 内容标准文档
-- [ ] 题库 JSON/YAML 化
+- [x] 题库 JSON 化
 - [ ] 搜索和标签筛选
 - [ ] 高频题榜单
 - [ ] 收藏 / 错题本

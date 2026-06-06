@@ -1,291 +1,183 @@
 #!/usr/bin/env python3
 """
-数据库种子脚本 —— 从网站现有题目 + zero2Agent 面经填充 SQLite
+Seed SQLite database from structured JSON data.
+
+This script loads:
+- data/topics.json
+- data/questions/*.json
+
+By default it rebuilds topics/questions and clears progress/daily logs, matching
+the old behavior. Keep production DB backups before running on a live server.
 """
+from __future__ import annotations
+
+import json
 import sqlite3
-import os
-import sys
+from pathlib import Path
 
-# 添加 backend 目录到 path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/backend")
+ROOT = Path(__file__).resolve().parent
+BACKEND_DIR = ROOT / "backend"
+DATA_DIR = ROOT / "data"
+QUESTIONS_DIR = DATA_DIR / "questions"
+DB_PATH = BACKEND_DIR / "mianjing.db"
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "mianjing.db")
+VALID_DIFFICULTIES = {"easy", "basic", "medium", "hard", "system-design", "project"}
 
 
-def seed():
-    db = sqlite3.connect(DB_PATH)
+def load_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def normalize_companies(value):
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return ",".join(str(v).strip() for v in value if str(v).strip())
+    return str(value)
+
+
+def validate_topics(topics: list[dict]) -> None:
+    ids = set()
+    slugs = set()
+    for topic in topics:
+        for field in ["id", "slug", "name", "english", "icon"]:
+            if field not in topic:
+                raise ValueError(f"topic missing field {field}: {topic}")
+        if topic["id"] in ids:
+            raise ValueError(f"duplicate topic id: {topic['id']}")
+        if topic["slug"] in slugs:
+            raise ValueError(f"duplicate topic slug: {topic['slug']}")
+        ids.add(topic["id"])
+        slugs.add(topic["slug"])
+
+
+def load_questions(topic_ids: set[int]) -> list[dict]:
+    questions: list[dict] = []
+    seen_ids: set[str] = set()
+    for path in sorted(QUESTIONS_DIR.glob("*.json")):
+        items = load_json(path)
+        if not isinstance(items, list):
+            raise ValueError(f"{path} must contain a JSON array")
+        for index, q in enumerate(items, start=1):
+            for field in ["id", "topic_id", "question", "difficulty", "novice_answer", "expert_answer"]:
+                if field not in q:
+                    raise ValueError(f"{path}:{index} missing field {field}")
+            if q["id"] in seen_ids:
+                raise ValueError(f"duplicate question id: {q['id']}")
+            if q["topic_id"] not in topic_ids:
+                raise ValueError(f"{q['id']} references unknown topic_id {q['topic_id']}")
+            if q["difficulty"] not in VALID_DIFFICULTIES:
+                raise ValueError(f"{q['id']} invalid difficulty: {q['difficulty']}")
+            if not str(q["question"]).strip():
+                raise ValueError(f"{q['id']} question is empty")
+            if not str(q["expert_answer"]).strip():
+                raise ValueError(f"{q['id']} expert_answer is empty")
+            q.setdefault("hot", 0)
+            q.setdefault("sort_order", index)
+            q.setdefault("companies", [])
+            q.setdefault("tags", [])
+            seen_ids.add(q["id"])
+            questions.append(q)
+    return questions
+
+
+def init_schema(db_path: Path = DB_PATH) -> None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    db = sqlite3.connect(db_path)
+    db.execute("PRAGMA journal_mode=WAL")
+    db.executescript("""
+        CREATE TABLE IF NOT EXISTS topics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            english TEXT,
+            sort_order INTEGER DEFAULT 0,
+            icon TEXT DEFAULT '📚'
+        );
+
+        CREATE TABLE IF NOT EXISTS questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            topic_id INTEGER NOT NULL,
+            question_text TEXT NOT NULL,
+            novice_answer TEXT,
+            expert_answer TEXT,
+            companies TEXT,
+            level TEXT DEFAULT 'medium',
+            hot INTEGER DEFAULT 0,
+            sort_order INTEGER DEFAULT 0,
+            FOREIGN KEY (topic_id) REFERENCES topics(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS progress (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question_id INTEGER UNIQUE NOT NULL,
+            status TEXT DEFAULT 'pending',
+            learned_at TEXT,
+            review_count INTEGER DEFAULT 0,
+            FOREIGN KEY (question_id) REFERENCES questions(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS daily_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            topic_id INTEGER NOT NULL,
+            question_ids TEXT NOT NULL,
+            created_at TEXT DEFAULT (datetime('now', 'localtime'))
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_progress_status ON progress(status);
+        CREATE INDEX IF NOT EXISTS idx_questions_topic ON questions(topic_id);
+    """)
+    db.commit()
+    db.close()
+
+
+def seed(db_path: Path = DB_PATH) -> None:
+    init_schema(db_path)
+    topics = load_json(DATA_DIR / "topics.json")
+    validate_topics(topics)
+    questions = load_questions({int(t["id"]) for t in topics})
+
+    db = sqlite3.connect(db_path)
     db.execute("PRAGMA journal_mode=WAL")
 
-    # 清空已有数据
-    for t in ["daily_log", "progress", "questions", "topics"]:
-        db.execute(f"DELETE FROM {t}")
+    for table in ["daily_log", "progress", "questions", "topics"]:
+        db.execute(f"DELETE FROM {table}")
     db.execute("DELETE FROM sqlite_sequence WHERE name IN ('topics','questions','progress','daily_log')")
 
-    # ─── 15 个专题 ───
-    topics = [
-        (1, "架构设计与选型", "Architecture Design", "🏗️"),
-        (2, "工具管理与 MCP", "Tool Management & MCP", "🔧"),
-        (3, "容错与鲁棒性", "Fault Tolerance", "🛡️"),
-        (4, "记忆与上下文", "Memory & Context", "🧠"),
-        (5, "评估与全局观", "Evaluation", "📊"),
-        (6, "多智能体协作", "Multi-Agent", "🤝"),
-        (7, "工程化踩坑", "Engineering Pitfalls", "💣"),
-        (8, "Prompt 工程与 Skills", "Prompt Engineering", "✍️"),
-        (9, "RAG 与检索系统", "RAG & Retrieval", "🔍"),
-        (10, "训练与模型优化", "Training & Models", "🏋️"),
-        (11, "AI 代码测试", "AI Code Testing", "🧪"),
-        (12, "业务 AI 工程", "Business AI Engineering", "💼"),
-        (13, "简历项目拷打", "Project Deep Dive", "🎯"),
-        (14, "公司面试偏好", "Company Preferences", "🏢"),
-        (15, "前沿概念考察", "Cutting-edge Concepts", "🚀"),
-    ]
-    for tid, name, eng, icon in topics:
+    for topic in sorted(topics, key=lambda t: t.get("sort_order", t["id"])):
         db.execute(
             "INSERT INTO topics (id, name, english, sort_order, icon) VALUES (?,?,?,?,?)",
-            (tid, name, eng, tid, icon)
+            (
+                int(topic["id"]),
+                topic["name"],
+                topic.get("english", ""),
+                int(topic.get("sort_order", topic["id"])),
+                topic.get("icon", "📚"),
+            ),
         )
 
-    # ─── 从 index.html 提取的 50 道原有题目 ───
-    old_questions = [
-        # Topic 1: 架构设计
-        (1, "Agent和RAG有什么区别？各自的适用场景是什么？",
-         "Agent可以自主执行多步操作，RAG主要是检索+生成的模式。Agent更灵活。",
-         "Agent = LLM + Planning + Memory + Tool Use（自主决策、多步执行）。RAG = 检索(Retrieval) + 生成(Generation)（查资料回答问题）。Agent 适合开放性任务（旅行规划、自动化运维），RAG 适合知识密集型问答（客服、文档问答）。两者可以结合：RAG 为 Agent 提供知识基础。关键判断标准：需要多步决策→Agent；只需基于资料回答→RAG。",
-         "字节一面,蚂蚁一面,阿里一面", "medium", 3),
-
-        (1, "ReAct模式和Plan-and-Execute模式的核心区别？",
-         "ReAct是边想边做，Plan是先规划再执行。",
-         "ReAct：Thought → Action → Observation 循环，每步基于上一步结果动态决策，适合不确定性高、需要灵活应变的开放任务。Plan-and-Execute：Planner 一次性生成完整步骤 → Executor 按序执行，适合流程固定、确定性高的任务。核心差异：信息不完备度。开环（ReAct）vs 闭环（Plan）。生产实践：宏观用 Plan-and-Execute 做任务分解，微观用 ReAct 处理每个步骤。",
-         "腾讯终面,字节二面,淘天二面", "medium", 5),
-
-        (1, "Agent 由哪些核心模块组成？请从学术角度回答",
-         "大模型加上工具调用和记忆。",
-         "按 Lilian Weng 综述框架：Agent = LLM（大脑）+ Planning（规划）+ Memory（记忆）+ Tool Use（工具）。LLM 是核心推理引擎；Planning 负责任务分解和自我反思；Memory 分短期（上下文窗口）和长期（外部存储+检索）；Tool Use 让 Agent 调用外部能力。工业界扩展：Perception（多模态感知）+ Action（副作用控制）。面试官要听的是你对 Agent 结构化认知，不是「LLM + Prompt」。",
-         "字节一面,蚂蚁一面", "medium", 4),
-
-        (1, "Agent 有哪四种设计范式？怎么选？",
-         "ReAct、Plan-and-Execute，还有别的吗。",
-         "四种范式：① ReAct（边走边看）→ 开放任务、不确定性高；② Plan-and-Execute（先规划再执行）→ 流程固定、确定性高；③ Reflexion/Self-Refine（自我反思修正）→ 质量要求高（代码、文案）；④ 多Agent协作 → 需要多视角的复杂任务。实际工程是混合范式：宏观 Plan-and-Execute + 微观 ReAct + 关键输出 Reflexion。选择标准：决策路径是否在设计时可穷举。",
-         "字节一面,淘宝闪购一面", "medium", 2),
-
-        (1, "Agent 和 Workflow 的边界在哪？为什么很多团队做到最后是混合架构？",
-         "复杂用 Agent，简单用 Workflow。",
-         "判断标准不是复杂度，而是决策路径是否可穷举。Workflow 是「编排」——设计者画好流程图；Agent 是「委托」——给目标让系统自己决定怎么达成。生产系统中，80% 步骤是确定性的（权限校验、数据查询），20% 需要智能判断（意图理解、方案推荐）。混合架构：确定性环节用 Workflow（可靠、可测、低成本），不确定性环节嵌入 Agent 节点（灵活、智能）。",
-         "字节二面,腾讯二面", "medium", 3),
-
-        # Topic 2: 工具管理与 MCP
-        (2, "Function Calling 的原理是什么？和普通Prompt有什么区别？",
-         "就是让模型调用函数，输出JSON格式的工具调用参数。",
-         "Function Calling 是模型从「文本生成器」升级为「行动执行器」的关键机制。模型不是直接执行代码，而是输出结构化的调用意图（工具名+参数JSON），由外部编排层执行。核心区别：① 普通Prompt输出自由文本→不可靠解析；② Function Calling输出结构化JSON→系统确定性处理。本质是把模型意图从「需要猜的自由文本」变成「有格式保证的结构化消息」。关键是 Schema 设计要精确，描述写给模型看。",
-         "蚂蚁一面,字节一面,小红书一面", "medium", 4),
-
-        (2, "MCP（Model Context Protocol）是什么？和Function Calling有什么区别？",
-         "MCP 是 Anthropic 出的工具协议，用来统一调用外部工具。",
-         "FC 解决「模型怎么表达调用意图」，MCP 解决「工具怎么被发现和连接」。FC 是模型侧能力（输出格式化），MCP 是连接协议（客户端-服务器通信标准）。类比：FC = 会说话，MCP = 有电话网络。MCP 架构：Host → MCP Client → MCP Server（tools/list + tools/call）。没有 MCP 时，每个工具要写适配代码；有 MCP 后，一个 Server 所有 Agent 都能用。",
-         "字节二面,高德一面,蚂蚁二面", "medium", 5),
-
-        (2, "大模型调用工具的完整链路是什么？",
-         "用户输入→模型输出工具名和参数→调用工具→返回结果→模型组织回答。",
-         "完整链路：① 工具注册（定义Schema：名称/描述/参数JSON Schema）→ ② 用户输入 → ③ 模型分析意图，决定是否调工具 → ④ 模型输出 tool_call（工具名+参数JSON）→ ⑤ 编排层校验参数合法性 → ⑥ 执行实际工具调用（超时控制+错误处理）→ ⑦ 工具返回结构化结果（status + data + error）→ ⑧ 结果回传模型 → ⑨ 模型整合工具结果生成最终回答。关键设计点：Schema要带「负面描述」、返回值要结构化、错误要分级处理。",
-         "蚂蚁一面,淘天二面", "easy", 3),
-
-        (2, "MCP Server 如何构建？有哪些实现细节？",
-         "写个 API 接口实现 MCP 协议就行。",
-         "核心步骤：① 定义 Tool Schema（名称/描述/参数/输出格式，描述要写给模型看）→ ② 实现 Handler（参数校验、错误处理、超时控制）→ ③ 选传输方式（stdio 本地/HTTP+SSE 远程）→ ④ 注册与发现（Server 启动时声明工具列表）。和直接写 API 的区别：MCP 统一了工具发现、参数定义、调用方式和错误处理，Agent 不需要知道底层是 REST 还是 gRPC。",
-         "字节二面", "hard", 3),
-
-        (2, "工具库有上百个工具时，怎么让模型快速选对？",
-         "把所有工具描述发给模型让它选。",
-         "不可能全发，上下文不够且干扰模型。方案：① 轻量工具路由层——用 FastText/BERT 快速提取意图关键词 → ② 语义检索召回 top-5 工具 → ③ 精调 7B 小模型精排 → ④ 只把 top-2 完整 schema 交给大模型。三层路由：意图分类器 → 大类语义检索 → 最终选择，每层缩小 5-10 倍，准确率 70%→95%+。还要防止高频工具偏差和语义模糊偏差。",
-         "腾讯终面,阿里一面", "hard", 4),
-
-        # Topic 3: 容错与鲁棒性
-        (3, "Agent 如何减少幻觉？工业场景怎么做？",
-         "用 RAG 给模型提供事实依据。",
-         "RAG 只是一层。工业级方案分三个阶段：生成前（Prompt 约束+ RAG 注入事实+上下文精简）、生成中（Structured Output+引用溯源）、生成后（事实校验链路+一致性检测+人工兜底）。七层防线：Prompt → RAG → 格式约束 → 引用溯源 → 事实校验 → 一致性检测 → 人工审核。每层成本递增但可靠性递增，三层缺一不可。",
-         "字节一面,蚂蚁一面,淘天一面", "medium", 5),
-
-        (3, "工具调用超时/失败了怎么办？",
-         "重试或者报错给用户。",
-         "分层错误处理：① 错误分类：网络超时/5xx→指数退避重试（最多2次）；4xx（参数错）→参数诊断子流程，小模型分析错误+调整参数重试；② 备选方案：核心路径启动备用通道（主支付→备用支付）；③ 完整日志记录所有状态和决策，方便复盘。目标：任务尽可能完成，而非一遇错就崩。和传统后端的容错设计思路完全一致。",
-         "腾讯终面,携程一面", "medium", 4),
-
-        (3, "Agent 执行 shell 命令怎么保证安全？",
-         "加个白名单，只允许执行安全的命令。",
-         "四层纵深防御：① 生成阶段：参数化构建（不让模型拼完整命令），命令模板化（模型只填参数）→ ② 执行前：白名单+黑名单+危险模式检测+高风险操作人工确认 → ③ 执行环境：沙箱/容器隔离+最小权限+资源限制(cgroup) → ④ 执行后：完整审计日志+异常检测告警。Agent 安全还有 Prompt Injection、数据泄露、权限提升、供应链攻击、DoS 五类威胁。",
-         "蚂蚁一面,快手一面", "hard", 3),
-
-        (3, "Prompt 注入攻击怎么防御？",
-         "过滤掉恶意输入。",
-         "四层纵深防御：① 输入过滤（规则+分类器+长度限制）→ ② Prompt 加固（系统指令中加防御语句）→ ③ 上下文隔离（用户输入和系统指令用标签分离，RAG 结果标注为「参考材料」非「指令」）→ ④ 输出检测（检查 PII 泄露/系统 prompt 片段）。要区分直接注入和间接注入（RAG 文档中藏恶意指令）。",
-         "快手一面", "hard", 2),
-
-        # Topic 4: 记忆与上下文
-        (4, "长对话里怎么让 Agent 不忘记关键信息？",
-         "用向量数据库存起来。",
-         "三段式记忆：① 滚动窗口记忆（最近3-5轮原样保留）→ ② 关键实体记忆（NER 实时抽取+知识图谱存储）→ ③ 周期性摘要记忆（每10轮结构化摘要）。查询时三段同时召回按权重融合。模型层面：滑动窗口注意力、稀疏注意力(Loongformer)、关键信息锚定、RAG、结构化状态外置。Agent 场景最可靠的是结构化状态外置——用系统机制保证，不依赖模型 attention 分布。",
-         "腾讯终面,字节二面", "medium", 5),
-
-        (4, "Agent 的长短期记忆怎么设计？",
-         "短期记忆是当前对话，长期记忆存数据库。",
-         "三层记忆模型（类比人类认知）：① 感知记忆（瞬时）：当前输入+最近1-2轮→当前请求；② 短期记忆（工作记忆）：上下文窗口内全部历史→当前会话；③ 长期记忆（长时记忆）：外部存储（向量库/数据库）→跨会话持久。还有「工作记忆」——任务级别的临时状态（todo list/中间结果）。记忆更新策略：增量更新+冲突检测+TTL分级淘汰+主动验证。",
-         "字节一面,蚂蚁二面,淘天一面", "medium", 4),
-
-        (4, "上下文窗口不够用，对话太长了怎么办？",
-         "截断早期消息，只保留最近几轮。",
-         "四层方案：① 早期对话压缩成摘要（释放原始token）→ ② 大任务拆子任务（中间结果通过数据库传递）→ ③ 中间结果落库（上下文只留一句摘要）→ ④ 按需回溯而非全量携带（建索引+按主题召回）。核心思路：先用工程手段省token，实在不够再考虑模型层面的压缩。",
-         "字节二面,阿里国际一面", "medium", 3),
-
-        # Topic 5: 评估
-        (5, "如何量化评估一个上线的 Agent？",
-         "看任务成功率和用户满意度。",
-         "三维看板：① 效能维度（任务完成率、平均步数、单任务耗时与Token成本）→ ② 质量维度（准确率、满意度、一次解决率）→ ③ 鲁棒性维度（异常处理成功率、自修复触发率、平均无故障时间）。最关键：每次失败必须归因到具体模块（意图理解/规划/工具调用/记忆），流入优化队列驱动迭代。评测集四类：基础(60%)+边界(20%)+对抗(10%)+回归(10%)。",
-         "腾讯终面,淘天一面", "medium", 4),
-
-        (5, "Agent 在线上最难监控的指标是什么？",
-         "延迟和成功率。",
-         "最难的是「表面成功但实际决策错误」——工具调用了、答案也返回了，但它选错了工具、用了次优证据、或者该追问却没追问。所以需要两类指标：系统指标（延迟/成功率/错误率）和决策质量指标（工具选择正确率、重复动作率、无效步数占比、该追问却未追问的比例）。后者更难建但更关键。",
-         "腾讯二面", "hard", 2),
-
-        # Topic 6: 多智能体
-        (6, "多智能体怎么协作？如何防止「踢皮球」？",
-         "一个写完发给另一个看就行。加个超时防止死循环。",
-         "协作四要素：① 角色隔离（职责不交叉，审查员不改代码）→ ② 结构化通信（JSON消息：task_id/role/action）→ ③ 协作拓扑（顺序链/并行扇出/层级委托/动态路由）→ ④ 冲突收敛（仲裁者或人工介入）。防踢皮球：职责判定前置+交互轮次硬限制+状态机驱动流转+全局超时兜底。和微服务架构思路完全一致。",
-         "蚂蚁一面,腾讯二面", "medium", 3),
-
-        (6, "什么时候用 SubAgent？和直接调工具的区别？",
-         "工具调用多就用 SubAgent。",
-         "判断标准是上下文隔离的收益是否大于通信成本。需要 SubAgent：① 子任务产生大量中间结果但主任务只需结论（搜索10个文件找函数定义）→ ② 子任务上下文和主任务高度不相关 → ③ 需要并行处理独立子任务。本质上 SubAgent 是一种上下文管理策略——用进程隔离解决上下文污染问题。主 Agent 和子 Agent 不共用上下文，通过结构化消息通信。",
-         "蚂蚁一面,bilibili一面", "medium", 4),
-
-        # Topic 7: 工程化踩坑
-        (7, "开发 Agent 踩过哪些坑？",
-         "模型有时候不听话，输出格式不对。",
-         "四大典型坑：① 死循环（同工具同参数反复调用）→ 失败计数器+全局步数上限；② 状态丢失（长对话关键信息被截断）→ 关键参数外置+强制注入+定期自检；③ JSON 解析翻车（多逗号/少引号/前面加废话）→ 正则提取+容错解析+用原生FC替代；④ 成本失控（30步复杂任务烧几十块）→ token预算+分级调度+缓存复用+熔断保护。",
-         "字节一面,腾讯一面", "medium", 4),
-
-        (7, "Agent 成本怎么控制？",
-         "用更便宜的模型。",
-         "四维控制：① 分级调度（意图识别用小模型7B，核心推理用大模型）→ ② Token 预算制（每任务上限，接近时自动省钱模式）→ ③ 缓存复用（相似请求+高频工具5分钟内复用结果）→ ④ 超预算熔断（单用户单日超阈值自动限流降级）。和后端限流降级熔断是同一套思路。",
-         "字节二面", "medium", 3),
-
-        # Topic 8: Prompt 工程
-        (8, "提示词模板怎么构建的？",
-         "把任务描述和代码拼成 Prompt 发给模型。",
-         "四层分离系统：① System Prompt 层（角色+输出格式+语言约束）→ ② 上下文注入层（源码/类型定义/已有用例，按需动态调整注入量）→ ③ 任务指令层（生成什么类型的测试，不同目标不同模板）→ ④ Few-shot 示例层（1-2个同风格示例对齐）。模板不是静态的——纯函数用轻量模板，有依赖函数自动加 mock 引导。模板需版本管理和 A/B 测试。",
-         "抖音基础架构一面", "medium", 3),
-
-        (8, "Skills 是什么？和 MCP 有什么区别？",
-         "Skills 就是预定义的 Prompt 模板。",
-         "Skill = 触发条件 + Prompt模板 + 工具集合 + 输出约束 + 上下文策略。三层理解：① 结构化的 Prompt 模板 → ② 领域知识的封装 → ③ Agent 的「职业技能树」。MCP=给 Agent 提供工具（能做什么），Skill=给 Agent 提供知识和方法论（怎么做、为什么这样做）。类比：MCP是工具箱，Skill是操作手册。两者互补——Skill 中的工具调用通过 MCP 协议完成。",
-         "抖音一面,蚂蚁二面,小红书一面", "medium", 5),
-
-        # Topic 9: RAG
-        (9, "RAG 的检索流程是怎样的？",
-         "用向量数据库做相似度搜索。",
-         "离在线双链路。离线：文档清洗→切片→去重→embedding→向量入库。在线：query编码→向量召回+BM25关键词召回→混合合并去重→Rerank精排→证据拼接→LLM生成。切片策略核心：块太大召回不准，块太小上下文断裂。最佳实践：300-500 token + 语义边界切分 + 10-20% overlap。",
-         "阿里一面,腾讯一面", "easy", 4),
-
-        (9, "如何提升 RAG 召回率？",
-         "换更好的 Embedding 模型。",
-         "离线端：① 语义分块（按标题/段落）+overlap+元数据附加 → ② Embedding 微调（业务数据，Recall +10-20%）。在线端：① 多维度查询改写（意图/实体/同义/约束四角度）→ ② 混合召回（向量+BM25+标签）→ ③ HyDE（先让模型生成假设答案，用答案 embedding 去检索）。效果最大的三板斧：混合召回 > chunk 优化 > Embedding 微调。",
-         "蚂蚁一面,抖音一面", "medium", 3),
-
-        (9, "RAG 为什么需要向量检索？和关键词检索有什么区别？",
-         "向量检索更准。",
-         "不是「更准」，是解决不同问题。关键词检索（BM25）：词级精确匹配，适合查错误码/API名/文件路径；向量检索（Embedding）：语义级相似度，适合「服务器老挂」→「服务可用性异常」。关键洞察：向量检索在精确匹配上反而不如关键词检索。生产最佳实践是混合检索——向量路保语义覆盖，关键词路保精确命中。",
-         "蚂蚁一面,腾讯一面", "easy", 3),
-
-        # Topic 10: 训练
-        (10, "LoRA 微调的原理？和全参数微调的区别？",
-         "LoRA 省显存，全参数效果好。",
-         "LoRA 在原始权重旁插入低秩矩阵(A×B)，只训练 A、B 新增参数(0.1%-1%)，不更新原始权重。核心优势不是「省显存」，而是任务切换方便——同一基座换不同 adapter。B 矩阵零初始化（ΔW=0 起步，不破坏预训练能力）。秩选择：简单任务 r=4-8，领域知识注入 r=16-32，逻辑推理 r=32-64。部署时 W_merged = W + α×B×A，零额外推理延迟。",
-         "阿里一面,字节一面", "medium", 4),
-
-        (10, "DPO、PPO、GRPO 的区别？",
-         "都是对齐方法，PPO 用 RL，DPO 不用。",
-         "核心差异：① PPO（在线RL）：需 Reward Model + Critic，4个模型，在线采样效果好但工程复杂；② DPO（离线偏好优化）：直接从偏好对(chosen/rejected)学习，1个模型，简单但需高质量偏好数据；③ GRPO（组内相对优化）：DeepSeek提出，无Critic，每prompt采8个回答用组内排名做奖励。选型：有强Reward Model→PPO；有偏好数据→DPO；有标准答案的任务（数学/代码）→GRPO。",
-         "阿里一面,腾讯一面,字节二面,阿里国际一面", "hard", 5),
-
-        # Topic 11: AI 代码测试
-        (11, "分支覆盖率怎么统计？代码插桩原理？",
-         "用 coverage 工具跑一下就行。",
-         "四个阶段：① 解析（AST识别所有分支点——if/else/switch/三元/短路）→ ② 插桩（每个分支入口插入计数器代码）→ ③ 执行（运行插桩代码，记录分支被执行的次数）→ ④ 统计（汇总计数器计算覆盖率）。实现方式：源码级（Istanbul/coverage.py，AST改写）和字节码级（JaCoCo，类加载时修改字节码，性能开销更小）。",
-         "抖音一面", "medium", 2),
-
-        (11, "AI 生成的代码怎么验证正确性？",
-         "跑一下看能不能通过。",
-         "三层验证：① 静态验证（零成本秒级）：类型检查/lin/安全扫描/Import检查→② 动态验证（中成本分钟级）：回归测试+AI自生成测试+属性测试→③ 语义验证（高成本但最可靠）：Spec对比+变异测试+人工抽检。AI代码最危险的不是编译报错，而是「看起来能跑但行为不对」——所以在语义验证层要比人写代码投入更多精力。",
-         "蚂蚁一面,字节一面", "medium", 3),
-
-        # Topic 12: 业务 AI 工程
-        (12, "「快速上线规则方案」和「训练AI方案」怎么选？",
-         "先上规则方案，后面再换 AI。",
-         "三维决策：① 问题确定性（高→规则引擎/中→混合/低→必须AI）→ ② 数据就绪度（无训练数据时先上规则积累数据）→ ③ 切换成本（架构设计时预留AI接口，抽象策略接口让规则和AI只是两种实现）。核心认知：不是「AI还是规则」的二选一，而是渐进式落地的工程思维——90%系统都是这么演进的。",
-         "网易一面", "medium", 2),
-
-        (12, "业务方反馈「AI效果差」，怎么系统性排查？",
-         "看看 bad case，调调 Prompt。",
-         "四层排查：① 复现与分类（标注失败类型统计分布：理解35%/检索25%/生成20%/体验15%/数据5%）→ ② 定位瓶颈环节（逐环节回放：意图→检索→生成→格式化）→ ③ 区分能力问题 vs 数据问题（大部分是数据问题！先查数据再查模型）→ ④ 建立持续监控（自动评测+告警阈值+回归测试集）。不分类就优化=蒙眼治病。",
-         "网易一面", "medium", 2),
-
-        # Topic 13: 项目拷打
-        (13, "你的 Agent 项目用了什么框架？为什么选它？",
-         "用了 LangChain，因为最流行。",
-         "如果用了框架：因为初期需要快速验证（Tool抽象/Memory模块省boilerplate），但后期遇到调试困难（链式抽象堆栈不直观）、定制化成本高（改写AgentExecutor比从头写还麻烦）、API变动频繁。后来关键模块改成自己实现。如果没用框架：核心循环500-800行代码，自己写更可控、可调试、灵活（自定义重试策略+错误恢复）。面试官考的是 trade-off 评估能力，不是考你用了什么。",
-         "淘宝闪购一面,CVTE一面", "medium", 3),
-
-        (13, "你的项目上线后效果怎么样？",
-         "做了个 demo，效果挺好的。",
-         "上线部署（FastAPI+容器化+全链路trace），跟踪核心指标：端到端完成率~75%、平均工具调用2.3次/任务、响应时间4-8秒。上线后做了三轮迭代：① 加输入预处理和意图兜底→② 优化工具调用错误恢复→③ 加对话历史压缩。Demo到生产的最大区别：边界情况暴增+用户输入远比测试集复杂。",
-         "淘宝闪购一面", "medium", 4),
-
-        # Topic 14: 公司偏好
-        (14, "腾讯 Agent 面试的重点考察方向是什么？",
-         "RAG 和基础八股。",
-         "腾讯覆盖面最广（51题）：① RAG 方向最强（16题）——Embedding/ReRank微调、双路召回TopK、GraphRAG是必考；② 系统设计能力突出——终面偏架构选型（ReAct vs Plan-Execute、ToT线上化成本）；③ 评估体系设计是高频追问——不只「准确率」，要有完整评测方案和归因分析。腾讯终面风格：从RAG系统设计往架构和细节逐层挖。",
-         "腾讯", "medium", 1),
-
-        (14, "蚂蚁集团 Agent 面试的特色题是什么？",
-         "工具管理和 RAG。",
-         "蚂蚁维度最全（48题、11个方向）：① 特色题：Skills 机制、SDD（Spec-Driven Development）、AI Coding 测试（代码插桩/覆盖率）→ 其他公司几乎不考；② MCP Server 构建和 Skill vs MCP 区别是蚂蚁高频；③ 安全权限管理和 Human-in-the-Loop 流程设计。不同团队侧重不同：AI Coding 团队（代码测试）/ 智能体平台（Skills+MCP）/ AI应用开发（全栈工程）。",
-         "蚂蚁", "medium", 1),
-
-        # Topic 15: 前沿概念
-        (15, "Harness Engineering 是什么？",
-         "好像是跟测试框架有关的。",
-         "Harness = 「线束」，把散乱线缆约束成有序束。三层结构：① 约束层（Rules/安全护栏/权限白名单，告诉Agent什么不能做）→ ② 增强层（Skills/动态工具注册/上下文模板，提供可复用能力）→ ③ 验证层（可重复评测环境/自动打分/日志归因，确保行为符合预期）。核心思想：模型是引擎，Harness 是方向盘+安全带+仪表盘。把保障能力从模型内部迁移到外部工程体系。",
-         "快手一面,字节二面,腾讯一面,阿里淘天一面", "hard", 4),
-
-        (15, "Prompt Engineering、Context Engineering、Harness Engineering 三者区别？",
-         "Prompt Engineering 是写提示词，其他两个不太清楚。",
-         "三代演进：① Prompt Engineering（2023）→ 解决「说什么」：怎么写指令让模型听话；② Context Engineering（2024）→ 解决「给什么」：怎么精准投喂信息（动态注入/渐进披露/记忆召回）；③ Harness Engineering（2025-2026）→ 解决「怎么保障」：用工程体系约束和增强（Rules/Skills/Hooks/评测/安全护栏）。不是替代关系，而是逐层递进——模型能力提升后，瓶颈从「怎么教」变成「怎么管」。",
-         "阿里淘天一面", "hard", 3),
-
-        (15, "MCP 和 A2A 分别解决什么问题？为什么需要两个协议？",
-         "MCP 调工具，A2A Agent 间通信。",
-         "层次不同：MCP（Agent↔工具）→ 请求-响应模式/无状态/同步确定；A2A（Agent↔Agent）→ 任务委托模式/有状态（生命周期）/异步不确定。为什么不能合并：工具调用语义（「查天气」马上返回）vs Agent 协作语义（「做市场调研」需几分钟可能追问），差异太大。MCP 已成熟可用，A2A 还在早期快速迭代。架构：MCP 在底层（垂直）连接工具，A2A 在上层（水平）连接 Agent。",
-         "蚂蚁一面,币安一面", "medium", 3),
-    ]
-
-    for q in old_questions:
+    for q in sorted(questions, key=lambda item: (int(item["topic_id"]), int(item.get("sort_order", 0)))):
         db.execute(
-            "INSERT INTO questions (topic_id, question_text, novice_answer, expert_answer, "
-            "companies, level, hot) VALUES (?,?,?,?,?,?,?)",
-            q
+            """
+            INSERT INTO questions
+            (topic_id, question_text, novice_answer, expert_answer, companies, level, hot, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(q["topic_id"]),
+                q["question"],
+                q.get("novice_answer", ""),
+                q.get("expert_answer", ""),
+                normalize_companies(q.get("companies")),
+                q.get("difficulty", "medium"),
+                int(q.get("hot", 0)),
+                int(q.get("sort_order", 0)),
+            ),
         )
 
     db.commit()
-    print(f"✅ 已填充 {len(old_questions)} 道题目到 {DB_PATH}")
-    print(f"✅ 15 个专题已就绪")
-
-    # 统计
-    for tid in range(1, 16):
-        count = db.execute("SELECT COUNT(*) as c FROM questions WHERE topic_id = ?", (tid,)).fetchone()[0]
-        name = db.execute("SELECT name FROM topics WHERE id = ?", (tid,)).fetchone()[0]
-        print(f"   专题{tid:2d} {name}: {count} 题")
-
     db.close()
+    print(f"✅ Seeded {len(topics)} topics and {len(questions)} questions into {db_path}")
 
 
 if __name__ == "__main__":

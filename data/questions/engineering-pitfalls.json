@@ -1,0 +1,31 @@
+[
+  {
+    "id": "engineering-pitfalls-001",
+    "topic_id": 7,
+    "question": "开发 Agent 踩过哪些坑？",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 1,
+    "novice_answer": "模型有时候不听话，输出格式不对。",
+    "expert_answer": "四大典型坑：① 死循环（同工具同参数反复调用）→ 失败计数器+全局步数上限；② 状态丢失（长对话关键信息被截断）→ 关键参数外置+强制注入+定期自检；③ JSON 解析翻车（多逗号/少引号/前面加废话）→ 正则提取+容错解析+用原生FC替代；④ 成本失控（30步复杂任务烧几十块）→ token预算+分级调度+缓存复用+熔断保护。",
+    "companies": [
+      "字节一面",
+      "腾讯一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "engineering-pitfalls-002",
+    "topic_id": 7,
+    "question": "Agent 成本怎么控制？",
+    "difficulty": "medium",
+    "hot": 3,
+    "sort_order": 2,
+    "novice_answer": "用更便宜的模型。",
+    "expert_answer": "四维控制：① 分级调度（意图识别用小模型7B，核心推理用大模型）→ ② Token 预算制（每任务上限，接近时自动省钱模式）→ ③ 缓存复用（相似请求+高频工具5分钟内复用结果）→ ④ 超预算熔断（单用户单日超阈值自动限流降级）。和后端限流降级熔断是同一套思路。",
+    "companies": [
+      "字节二面"
+    ],
+    "tags": []
+  }
+]

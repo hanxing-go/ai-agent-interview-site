@@ -1,0 +1,30 @@
+[
+  {
+    "id": "business-ai-engineering-001",
+    "topic_id": 12,
+    "question": "「快速上线规则方案」和「训练AI方案」怎么选？",
+    "difficulty": "medium",
+    "hot": 2,
+    "sort_order": 1,
+    "novice_answer": "先上规则方案，后面再换 AI。",
+    "expert_answer": "三维决策：① 问题确定性（高→规则引擎/中→混合/低→必须AI）→ ② 数据就绪度（无训练数据时先上规则积累数据）→ ③ 切换成本（架构设计时预留AI接口，抽象策略接口让规则和AI只是两种实现）。核心认知：不是「AI还是规则」的二选一，而是渐进式落地的工程思维——90%系统都是这么演进的。",
+    "companies": [
+      "网易一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "business-ai-engineering-002",
+    "topic_id": 12,
+    "question": "业务方反馈「AI效果差」，怎么系统性排查？",
+    "difficulty": "medium",
+    "hot": 2,
+    "sort_order": 2,
+    "novice_answer": "看看 bad case，调调 Prompt。",
+    "expert_answer": "四层排查：① 复现与分类（标注失败类型统计分布：理解35%/检索25%/生成20%/体验15%/数据5%）→ ② 定位瓶颈环节（逐环节回放：意图→检索→生成→格式化）→ ③ 区分能力问题 vs 数据问题（大部分是数据问题！先查数据再查模型）→ ④ 建立持续监控（自动评测+告警阈值+回归测试集）。不分类就优化=蒙眼治病。",
+    "companies": [
+      "网易一面"
+    ],
+    "tags": []
+  }
+]

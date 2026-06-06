@@ -1,0 +1,78 @@
+[
+  {
+    "id": "tool-management-mcp-001",
+    "topic_id": 2,
+    "question": "Function Calling 的原理是什么？和普通Prompt有什么区别？",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 1,
+    "novice_answer": "就是让模型调用函数，输出JSON格式的工具调用参数。",
+    "expert_answer": "Function Calling 是模型从「文本生成器」升级为「行动执行器」的关键机制。模型不是直接执行代码，而是输出结构化的调用意图（工具名+参数JSON），由外部编排层执行。核心区别：① 普通Prompt输出自由文本→不可靠解析；② Function Calling输出结构化JSON→系统确定性处理。本质是把模型意图从「需要猜的自由文本」变成「有格式保证的结构化消息」。关键是 Schema 设计要精确，描述写给模型看。",
+    "companies": [
+      "蚂蚁一面",
+      "字节一面",
+      "小红书一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "tool-management-mcp-002",
+    "topic_id": 2,
+    "question": "MCP（Model Context Protocol）是什么？和Function Calling有什么区别？",
+    "difficulty": "medium",
+    "hot": 5,
+    "sort_order": 2,
+    "novice_answer": "MCP 是 Anthropic 出的工具协议，用来统一调用外部工具。",
+    "expert_answer": "FC 解决「模型怎么表达调用意图」，MCP 解决「工具怎么被发现和连接」。FC 是模型侧能力（输出格式化），MCP 是连接协议（客户端-服务器通信标准）。类比：FC = 会说话，MCP = 有电话网络。MCP 架构：Host → MCP Client → MCP Server（tools/list + tools/call）。没有 MCP 时，每个工具要写适配代码；有 MCP 后，一个 Server 所有 Agent 都能用。",
+    "companies": [
+      "字节二面",
+      "高德一面",
+      "蚂蚁二面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "tool-management-mcp-003",
+    "topic_id": 2,
+    "question": "大模型调用工具的完整链路是什么？",
+    "difficulty": "easy",
+    "hot": 3,
+    "sort_order": 3,
+    "novice_answer": "用户输入→模型输出工具名和参数→调用工具→返回结果→模型组织回答。",
+    "expert_answer": "完整链路：① 工具注册（定义Schema：名称/描述/参数JSON Schema）→ ② 用户输入 → ③ 模型分析意图，决定是否调工具 → ④ 模型输出 tool_call（工具名+参数JSON）→ ⑤ 编排层校验参数合法性 → ⑥ 执行实际工具调用（超时控制+错误处理）→ ⑦ 工具返回结构化结果（status + data + error）→ ⑧ 结果回传模型 → ⑨ 模型整合工具结果生成最终回答。关键设计点：Schema要带「负面描述」、返回值要结构化、错误要分级处理。",
+    "companies": [
+      "蚂蚁一面",
+      "淘天二面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "tool-management-mcp-004",
+    "topic_id": 2,
+    "question": "MCP Server 如何构建？有哪些实现细节？",
+    "difficulty": "hard",
+    "hot": 3,
+    "sort_order": 4,
+    "novice_answer": "写个 API 接口实现 MCP 协议就行。",
+    "expert_answer": "核心步骤：① 定义 Tool Schema（名称/描述/参数/输出格式，描述要写给模型看）→ ② 实现 Handler（参数校验、错误处理、超时控制）→ ③ 选传输方式（stdio 本地/HTTP+SSE 远程）→ ④ 注册与发现（Server 启动时声明工具列表）。和直接写 API 的区别：MCP 统一了工具发现、参数定义、调用方式和错误处理，Agent 不需要知道底层是 REST 还是 gRPC。",
+    "companies": [
+      "字节二面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "tool-management-mcp-005",
+    "topic_id": 2,
+    "question": "工具库有上百个工具时，怎么让模型快速选对？",
+    "difficulty": "hard",
+    "hot": 4,
+    "sort_order": 5,
+    "novice_answer": "把所有工具描述发给模型让它选。",
+    "expert_answer": "不可能全发，上下文不够且干扰模型。方案：① 轻量工具路由层——用 FastText/BERT 快速提取意图关键词 → ② 语义检索召回 top-5 工具 → ③ 精调 7B 小模型精排 → ④ 只把 top-2 完整 schema 交给大模型。三层路由：意图分类器 → 大类语义检索 → 最终选择，每层缩小 5-10 倍，准确率 70%→95%+。还要防止高频工具偏差和语义模糊偏差。",
+    "companies": [
+      "腾讯终面",
+      "阿里一面"
+    ],
+    "tags": []
+  }
+]

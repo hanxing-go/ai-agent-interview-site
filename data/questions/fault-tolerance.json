@@ -1,0 +1,62 @@
+[
+  {
+    "id": "fault-tolerance-001",
+    "topic_id": 3,
+    "question": "Agent 如何减少幻觉？工业场景怎么做？",
+    "difficulty": "medium",
+    "hot": 5,
+    "sort_order": 1,
+    "novice_answer": "用 RAG 给模型提供事实依据。",
+    "expert_answer": "RAG 只是一层。工业级方案分三个阶段：生成前（Prompt 约束+ RAG 注入事实+上下文精简）、生成中（Structured Output+引用溯源）、生成后（事实校验链路+一致性检测+人工兜底）。七层防线：Prompt → RAG → 格式约束 → 引用溯源 → 事实校验 → 一致性检测 → 人工审核。每层成本递增但可靠性递增，三层缺一不可。",
+    "companies": [
+      "字节一面",
+      "蚂蚁一面",
+      "淘天一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "fault-tolerance-002",
+    "topic_id": 3,
+    "question": "工具调用超时/失败了怎么办？",
+    "difficulty": "medium",
+    "hot": 4,
+    "sort_order": 2,
+    "novice_answer": "重试或者报错给用户。",
+    "expert_answer": "分层错误处理：① 错误分类：网络超时/5xx→指数退避重试（最多2次）；4xx（参数错）→参数诊断子流程，小模型分析错误+调整参数重试；② 备选方案：核心路径启动备用通道（主支付→备用支付）；③ 完整日志记录所有状态和决策，方便复盘。目标：任务尽可能完成，而非一遇错就崩。和传统后端的容错设计思路完全一致。",
+    "companies": [
+      "腾讯终面",
+      "携程一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "fault-tolerance-003",
+    "topic_id": 3,
+    "question": "Agent 执行 shell 命令怎么保证安全？",
+    "difficulty": "hard",
+    "hot": 3,
+    "sort_order": 3,
+    "novice_answer": "加个白名单，只允许执行安全的命令。",
+    "expert_answer": "四层纵深防御：① 生成阶段：参数化构建（不让模型拼完整命令），命令模板化（模型只填参数）→ ② 执行前：白名单+黑名单+危险模式检测+高风险操作人工确认 → ③ 执行环境：沙箱/容器隔离+最小权限+资源限制(cgroup) → ④ 执行后：完整审计日志+异常检测告警。Agent 安全还有 Prompt Injection、数据泄露、权限提升、供应链攻击、DoS 五类威胁。",
+    "companies": [
+      "蚂蚁一面",
+      "快手一面"
+    ],
+    "tags": []
+  },
+  {
+    "id": "fault-tolerance-004",
+    "topic_id": 3,
+    "question": "Prompt 注入攻击怎么防御？",
+    "difficulty": "hard",
+    "hot": 2,
+    "sort_order": 4,
+    "novice_answer": "过滤掉恶意输入。",
+    "expert_answer": "四层纵深防御：① 输入过滤（规则+分类器+长度限制）→ ② Prompt 加固（系统指令中加防御语句）→ ③ 上下文隔离（用户输入和系统指令用标签分离，RAG 结果标注为「参考材料」非「指令」）→ ④ 输出检测（检查 PII 泄露/系统 prompt 片段）。要区分直接注入和间接注入（RAG 文档中藏恶意指令）。",
+    "companies": [
+      "快手一面"
+    ],
+    "tags": []
+  }
+]
