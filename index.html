@@ -90,6 +90,16 @@ body::after{content:"";position:fixed;inset:-18%;pointer-events:none;z-index:0;b
 .search-input:focus{border-color:var(--ac);box-shadow:inset 0 1px 0 rgba(255,255,255,0.95),0 0 0 3px rgba(57,197,187,0.12),0 12px 28px rgba(57,197,187,0.14)}
 .search-input::placeholder{color:var(--t3)}
 
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.filter-select{
+  padding:8px 12px;border-radius:10px;border:1px solid rgba(57,197,187,0.28);
+  background:rgba(255,255,255,0.72);color:var(--t1);font-size:0.78em;font-family:inherit;outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 8px 20px rgba(57,197,187,0.08);
+}
+.quick-filter{display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border-radius:999px;border:1px solid rgba(57,197,187,0.28);background:rgba(255,255,255,0.72);color:#16747a;font-size:0.76em;font-weight:700;cursor:pointer}
+.quick-filter.on{background:linear-gradient(135deg,rgba(57,197,187,0.2),rgba(102,204,255,0.22));border-color:var(--br2);color:#057f84}
+.result-meta{font-size:0.72em;color:var(--t3);margin-left:8px}
+
 .content{flex:1;overflow-y:auto;padding:20px 28px 32px}
 .content::-webkit-scrollbar{width:6px}
 .content::-webkit-scrollbar-track{background:transparent}
@@ -200,7 +210,29 @@ body::after{content:"";position:fixed;inset:-18%;pointer-events:none;z-index:0;b
     </div>
   </div>
   <div class="search-wrap">
-    <input class="search-input" id="search" placeholder="🔍 搜索题目、公司、知识点..." oninput="doSearch()">
+    <input class="search-input" id="search" placeholder="🔍 搜索题目、公司、知识点..." oninput="loadQuestions()">
+    <div class="filter-row">
+      <select class="filter-select" id="difficulty-filter" onchange="loadQuestions()">
+        <option value="">全部难度</option>
+        <option value="easy">easy</option>
+        <option value="basic">basic</option>
+        <option value="medium">medium</option>
+        <option value="hard">hard</option>
+        <option value="system-design">system-design</option>
+        <option value="project">project</option>
+      </select>
+      <select class="filter-select" id="status-filter" onchange="loadQuestions()">
+        <option value="">全部状态</option>
+        <option value="pending">未掌握</option>
+        <option value="learned">已掌握</option>
+      </select>
+      <button class="quick-filter" id="hot-filter" onclick="toggleHot()">🔥 只看高频</button>
+      <button class="quick-filter" onclick="quickKeyword('RAG')">🧠 RAG</button>
+      <button class="quick-filter" onclick="quickKeyword('MCP')">🔧 MCP</button>
+      <button class="quick-filter" onclick="quickKeyword('项目')">🎯 项目深挖</button>
+      <button class="quick-filter" onclick="clearFilters()">✨ 清空</button>
+      <span class="result-meta" id="result-meta"></span>
+    </div>
   </div>
   <div class="content" id="area"><div class="load"><div class="spin"></div> Miku 正在调取题库 ♪</div></div>
 </div>
@@ -213,11 +245,24 @@ async function api(m,p){return (await fetch(A+p)).json()}
 
 async function init(){
   allTopics=await api('GET','/api/topics');
-  allQuestions=[];
-  for(const t of allTopics){
-    const d=await api('GET',`/api/topics/${t.id}/questions?limit=100`);
-    if(!d.empty) allQuestions.push(...d.questions.map(q=>({...q,topic_name:t.name,topic_icon:t.icon})));
-  }
+  drawSidebar();
+  await loadQuestions();
+}
+
+async function loadQuestions(){
+  const params=new URLSearchParams();
+  const term=(document.getElementById('search')?.value||'').trim();
+  const diff=document.getElementById('difficulty-filter')?.value||'';
+  const status=document.getElementById('status-filter')?.value||'';
+  if(term)params.set('keyword',term);
+  if(activeCat!=='all')params.set('topic_id',activeCat);
+  if(diff)params.set('difficulty',diff);
+  if(status)params.set('status',status);
+  if(document.getElementById('hot-filter')?.classList.contains('on'))params.set('hot','true');
+  params.set('limit','500');
+  const d=await api('GET','/api/questions?'+params.toString());
+  allQuestions=d.questions||[];
+  document.getElementById('result-meta').textContent=`共 ${d.total||0} 题`;
   drawSidebar();
   render();
 }
@@ -225,15 +270,15 @@ async function init(){
 function drawSidebar(){
   const n=document.getElementById('topic-nav');
   let html=`<div class="sb-sec">📂 专题分类</div>
-  <a class="sb-item on" href="#" onclick="filterCat('all',this);return false">
+  <a class="sb-item ${activeCat==='all'?'on':''}" href="#" onclick="filterCat('all',this);return false">
     <span class="sb-ic">📋</span><span class="sb-nm">全部题目</span>
-    <span class="sb-badge">${allQuestions.length}</span>
+    <span class="sb-badge">${allTopics.reduce((n,t)=>n+(t.total||0),0)}</span>
   </a>`;
   allTopics.forEach(t=>{
     const cnt=allQuestions.filter(q=>q.topic_id===t.id).length;
-    html+=`<a class="sb-item" href="#" onclick="filterCat(${t.id},this);return false">
+    html+=`<a class="sb-item ${activeCat===t.id?'on':''}" href="#" onclick="filterCat(${t.id},this);return false">
       <span class="sb-ic">${t.icon||'📚'}</span><span class="sb-nm">${t.name}</span>
-      <span class="sb-badge">${cnt}</span>
+      <span class="sb-badge">${t.total||cnt}</span>
     </a>`;
   });
   n.innerHTML=html;
@@ -241,28 +286,30 @@ function drawSidebar(){
 
 function filterCat(cat,el){
   activeCat=cat;
-  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
-  if(el)el.classList.add('on');
-  document.getElementById('search').value='';
-  render();
+  loadQuestions();
 }
 
-function doSearch(){
+function toggleHot(){
+  document.getElementById('hot-filter').classList.toggle('on');
+  loadQuestions();
+}
+function quickKeyword(k){
+  document.getElementById('search').value=k;
   activeCat='all';
-  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
-  document.querySelector('.sb-item').classList.add('on');
-  render();
+  loadQuestions();
+}
+function clearFilters(){
+  document.getElementById('search').value='';
+  document.getElementById('difficulty-filter').value='';
+  document.getElementById('status-filter').value='';
+  document.getElementById('hot-filter').classList.remove('on');
+  activeCat='all';
+  loadQuestions();
 }
 
 function render(){
   const term=(document.getElementById('search').value||'').toLowerCase();
   let qs=allQuestions;
-  if(activeCat!=='all') qs=qs.filter(q=>q.topic_id===activeCat);
-  if(term) qs=qs.filter(q=>
-    q.question_text.toLowerCase().includes(term)||
-    (q.companies||[]).some(c=>c.toLowerCase().includes(term))||
-    (q.topic_name||'').toLowerCase().includes(term)
-  );
 
   if(!qs.length){
     document.getElementById('area').innerHTML=`<div class="empty"><div class="e">🔍</div><h3 style="color:var(--t1)">没找到匹配的题目</h3><p style="color:var(--t3)">换个关键词试试看 ♪</p></div>`;
@@ -270,7 +317,7 @@ function render(){
   }
 
   let html='';
-  if(activeCat==='all'&&!term){
+  if(activeCat==='all'&&!term && !document.getElementById('difficulty-filter').value && !document.getElementById('status-filter').value && !document.getElementById('hot-filter').classList.contains('on')){
     allTopics.forEach(t=>{
       const tqs=qs.filter(q=>q.topic_id===t.id);
       if(!tqs.length)return;

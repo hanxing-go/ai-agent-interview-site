@@ -194,6 +194,87 @@ def get_topic_questions(topic_id):
     return _format_questions(db, qids, topic_id)
 
 
+
+
+# ─── API: 题库搜索 / 筛选 ───
+
+@app.route("/api/questions")
+def search_questions():
+    """Search and filter questions.
+
+    Query params:
+    - keyword: search in question, answers, companies, topic name
+    - topic_id: filter by topic id
+    - difficulty: easy/basic/medium/hard/system-design/project
+    - hot: true/1 to only show high-frequency questions
+    - status: learned|pending|unlearned
+    - limit / offset: pagination
+    """
+    db = get_db()
+    keyword = (request.args.get("keyword") or "").strip()
+    topic_id = request.args.get("topic_id", type=int)
+    difficulty = (request.args.get("difficulty") or "").strip()
+    hot = (request.args.get("hot") or "").lower() in {"1", "true", "yes", "on"}
+    status = (request.args.get("status") or "").strip()
+    limit = min(max(request.args.get("limit", 100, type=int), 1), 500)
+    offset = max(request.args.get("offset", 0, type=int), 0)
+
+    where = []
+    params = []
+
+    if topic_id:
+        where.append("q.topic_id = ?")
+        params.append(topic_id)
+    if difficulty:
+        where.append("q.level = ?")
+        params.append(difficulty)
+    if hot:
+        where.append("q.hot > 0")
+    if status in {"learned", "pending", "unlearned"}:
+        if status == "learned":
+            where.append("p.status = 'learned'")
+        else:
+            where.append("(p.status IS NULL OR p.status != 'learned')")
+    if keyword:
+        like = f"%{keyword}%"
+        where.append("(q.question_text LIKE ? OR q.novice_answer LIKE ? OR q.expert_answer LIKE ? OR q.companies LIKE ? OR t.name LIKE ? OR t.english LIKE ?)")
+        params.extend([like, like, like, like, like, like])
+
+    where_sql = "WHERE " + " AND ".join(where) if where else ""
+    total = db.execute(
+        f"""
+        SELECT COUNT(*) as c
+        FROM questions q
+        JOIN topics t ON q.topic_id = t.id
+        LEFT JOIN progress p ON q.id = p.question_id
+        {where_sql}
+        """,
+        params,
+    ).fetchone()["c"]
+
+    rows = db.execute(
+        f"""
+        SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.english as topic_english,
+               COALESCE(p.status, 'pending') as status, p.learned_at, p.review_count
+        FROM questions q
+        JOIN topics t ON q.topic_id = t.id
+        LEFT JOIN progress p ON q.id = p.question_id
+        {where_sql}
+        ORDER BY q.hot DESC, t.sort_order ASC, q.sort_order ASC, q.id ASC
+        LIMIT ? OFFSET ?
+        """,
+        params + [limit, offset],
+    ).fetchall()
+
+    questions = [_question_to_dict(r) for r in rows]
+    return jsonify({
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "questions": questions,
+    })
+
+
 # ─── API: 标记题目状态 ───
 
 @app.route("/api/progress", methods=["POST"])
@@ -283,6 +364,25 @@ def _get_next_topic(db, current_id):
         return {"id": topics["id"], "name": topics["name"]}
     return None
 
+
+
+def _question_to_dict(q):
+    return {
+        "id": q["id"],
+        "topic_id": q["topic_id"],
+        "topic_name": q["topic_name"] if "topic_name" in q.keys() else None,
+        "topic_icon": q["topic_icon"] if "topic_icon" in q.keys() else None,
+        "topic_english": q["topic_english"] if "topic_english" in q.keys() else None,
+        "question_text": q["question_text"],
+        "novice_answer": q["novice_answer"],
+        "expert_answer": q["expert_answer"],
+        "companies": q["companies"].split(",") if q["companies"] else [],
+        "level": q["level"],
+        "hot": q["hot"],
+        "status": q["status"] if "status" in q.keys() else "pending",
+        "learned_at": q["learned_at"] if "learned_at" in q.keys() else None,
+        "review_count": q["review_count"] if "review_count" in q.keys() else 0,
+    }
 
 def _format_questions(db, qids, topic_id):
     questions = []

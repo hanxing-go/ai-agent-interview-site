@@ -155,12 +155,32 @@ study.html
 
 ---
 
+## Search and Filters
+
+题库浏览页和背诵页支持：
+
+- 关键词搜索：题目、答案、公司、专题
+- 专题筛选
+- 难度筛选
+- 高频题筛选
+- 已掌握 / 未掌握状态筛选
+
+常用入口：
+
+```text
+🔥 高频题
+🧠 RAG
+🔧 MCP
+🎯 项目深挖
+```
+
 ## API Overview
 
 当前 Flask 后端提供：
 
 | API | 说明 |
 |-----|------|
+| `GET /api/questions` | 搜索/筛选题库，支持 keyword/topic_id/difficulty/hot/status/limit/offset |
 | `GET /api/topics` | 获取专题列表和学习进度 |
 | `GET /api/daily` | 获取今日 5 道题 |
 | `GET /api/topics/<id>/questions` | 获取指定专题题目 |

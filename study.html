@@ -88,6 +88,13 @@ body{
 .prog-bar{height:3px;background:var(--br);border-radius:3px;overflow:hidden}
 .prog-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--ac2),var(--cy));transition:width 0.5s}
 
+.filter-wrap{padding:12px 28px;border-bottom:1px solid var(--br);background:rgba(15,25,41,0.7);display:none;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-wrap.on{display:flex}
+.filter-input,.filter-select{padding:8px 12px;border-radius:7px;border:1px solid var(--br);background:var(--s2);color:var(--t1);font-size:0.78em;font-family:inherit;outline:none}
+.filter-input{min-width:240px;flex:1}
+.filter-input:focus,.filter-select:focus{border-color:var(--ac)}
+.mode-pill{font-size:0.72em;color:var(--t3);padding:3px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--br)}
+
 .content{flex:1;overflow-y:auto;padding:20px 28px 32px}
 .content::-webkit-scrollbar{width:5px}
 .content::-webkit-scrollbar-thumb{background:var(--br);border-radius:3px}
@@ -203,11 +210,32 @@ body{
         <div class="st"><div class="v" id="s4" style="color:var(--cy)">0%</div><div class="l">进度</div></div>
       </div>
       <button class="btn btn-p" onclick="markAll()">✅ 全部完成</button>
+      <button class="btn" onclick="toggleSearchPanel()">🔍 搜索</button>
       <button class="btn" onclick="refresh()">🔄 换题</button>
       <button class="btn btn-g" onclick="reset()">🔁 重置</button>
     </div>
   </div>
   <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="pbar" style="width:0%"></div></div></div>
+  <div class="filter-wrap" id="filter-wrap">
+    <input class="filter-input" id="search" placeholder="🔍 搜索题目、公司、答案关键词..." oninput="searchMode()">
+    <select class="filter-select" id="difficulty-filter" onchange="searchMode()">
+      <option value="">全部难度</option>
+      <option value="easy">easy</option>
+      <option value="basic">basic</option>
+      <option value="medium">medium</option>
+      <option value="hard">hard</option>
+      <option value="system-design">system-design</option>
+      <option value="project">project</option>
+    </select>
+    <select class="filter-select" id="status-filter" onchange="searchMode()">
+      <option value="">全部状态</option>
+      <option value="pending">未掌握</option>
+      <option value="learned">已掌握</option>
+    </select>
+    <button class="btn" id="hot-filter" onclick="toggleHotSearch()">🔥 高频</button>
+    <button class="btn" onclick="dailyMode()">🎯 回到每日 5 题</button>
+    <span class="mode-pill" id="mode-meta">搜索模式</span>
+  </div>
   <div class="content" id="area"><div class="load"><div class="spin"></div> 加载中...</div></div>
 </div>
 <div id="toast" class="toast"></div>
@@ -323,6 +351,41 @@ async function loadStats(){
   document.getElementById('s2').textContent=s.total_learned;
   document.getElementById('s3').textContent=s.today_learned;
   document.getElementById('s4').textContent=s.progress_pct+'%';
+}
+
+function toggleSearchPanel(){
+  document.getElementById('filter-wrap').classList.toggle('on');
+  if(document.getElementById('filter-wrap').classList.contains('on')) searchMode();
+}
+async function searchMode(){
+  document.getElementById('filter-wrap').classList.add('on');
+  const params=new URLSearchParams();
+  const term=(document.getElementById('search')?.value||'').trim();
+  const diff=document.getElementById('difficulty-filter')?.value||'';
+  const status=document.getElementById('status-filter')?.value||'';
+  if(term)params.set('keyword',term);
+  if(tid)params.set('topic_id',tid);
+  if(diff)params.set('difficulty',diff);
+  if(status)params.set('status',status);
+  if(document.getElementById('hot-filter')?.classList.contains('btn-p'))params.set('hot','true');
+  params.set('limit','100');
+  const d=await api('GET','/api/questions?'+params.toString());
+  qs=d.questions||[];
+  document.getElementById('mode-meta').textContent=`搜索模式 · 共 ${d.total||0} 题`;
+  document.getElementById('top-meta').textContent=`🔍 当前专题内搜索 / 筛选 · ${d.total||0} 题`;
+  render();
+}
+function toggleHotSearch(){
+  document.getElementById('hot-filter').classList.toggle('btn-p');
+  searchMode();
+}
+async function dailyMode(){
+  document.getElementById('filter-wrap').classList.remove('on');
+  document.getElementById('search').value='';
+  document.getElementById('difficulty-filter').value='';
+  document.getElementById('status-filter').value='';
+  document.getElementById('hot-filter').classList.remove('btn-p');
+  await loadDaily();
 }
 function toast(m){
   const t=document.getElementById('toast');t.textContent=m;t.classList.add('s');
