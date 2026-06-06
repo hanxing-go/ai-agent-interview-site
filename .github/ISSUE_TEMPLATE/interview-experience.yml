@@ -1,0 +1,62 @@
+name: 真实面经投稿
+about: 投稿一次真实 AI Agent / LLM 应用开发面试经历
+title: "[Interview] "
+labels: ["content", "interview-experience"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请注意脱敏：不要泄露个人隐私、面试官信息、公司内部机密或未公开材料。
+  - type: input
+    id: company
+    attributes:
+      label: 公司
+      placeholder: 可写具体公司，也可写“某大厂/某创业公司”
+    validations:
+      required: true
+  - type: input
+    id: role
+    attributes:
+      label: 岗位
+      placeholder: AI 应用开发 / 后端开发 / Agent 工程师
+    validations:
+      required: true
+  - type: input
+    id: round
+    attributes:
+      label: 轮次
+      placeholder: 一面 / 二面 / HR 面 / 交叉面
+    validations:
+      required: false
+  - type: textarea
+    id: questions
+    attributes:
+      label: 题目列表
+      placeholder: |
+        1. Agent 和 Workflow 有什么区别？
+        2. RAG 如何评估？
+        3. 你的项目怎么做工具调用错误恢复？
+    validations:
+      required: true
+  - type: textarea
+    id: followups
+    attributes:
+      label: 面试官追问
+    validations:
+      required: false
+  - type: textarea
+    id: summary
+    attributes:
+      label: 复盘总结
+      description: 哪些题不会、哪些方向值得准备、有什么经验。
+    validations:
+      required: false
+  - type: dropdown
+    id: anonymous
+    attributes:
+      label: 是否需要匿名处理
+      options:
+        - 是
+        - 否
+    validations:
+      required: true
